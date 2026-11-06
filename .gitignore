@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 
-# Per-version native build products; distribute approved binaries via Releases.
+# Per-version build products; distribute the tested learning package as an archive.
 build/
 build-*/
 cmake-build-*/
@@ -43,6 +43,7 @@ CMakeCache.txt
 *.zip
 *.7z
 *.tar.gz
+!/downloads/BraidTools_Windows_Maya2022_2025_2026_Learning.zip
 
 # OS metadata.
 Thumbs.db

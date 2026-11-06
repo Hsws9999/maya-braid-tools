@@ -1,6 +1,5 @@
 {
-  "packageStatus": "local development / publication preparation",
-  "publicBinaryRelease": false,
+  "packageStatus": "precompiled learning preview; unregistered development node ID",
   "versions": {
     "2022": {
       "integrationStatus": "passed",
@@ -290,6 +289,30 @@
     "scripts/braidtools/_qt.py": "f0b8e90d06a25f98cc2c6a6ff675dee89390f5fbe7df2efaf278af082474c230",
     "scripts/braidtools/__init__.py": "fa122c617bd83b12dba3e479ea57b437d45d3c9fcbc08f24276ba2ac125a31ac",
     "tests/integration_maya.py": "87286777071d5735341305330f7bdf17cfaa0abc5b93cdf4d20f2b632cc10a9e",
-    "tests/module_qt_smoke.py": "a46a6ddb0aa986675b6504c15bc7b20f426893dfa391f815549b9cded57d6aa4"
+    "tests/module_qt_smoke.py": "a46a6ddb0aa986675b6504c15bc7b20f426893dfa391f815549b9cded57d6aa4",
+    "BraidTools_Install.py": "0db75f1cadafafef8434d192fdce81bba3c49df2b15188cb684c2cdf92f14e17",
+    "BraidTools.runtime.json": "0cfa0ffe292a6dcf6d9d872d173241370a432c625a0a9f7d1a41c2caa6da9325",
+    "tests/test_installer.py": "3808e31f093cd1379e3fbcb07ea16edc0d0d836be5bf433707468881b3f5c5b3"
+  },
+  "installer": {
+    "coreTestsPassed": 18,
+    "supportedMaya": [
+      2022,
+      2025,
+      2026
+    ],
+    "unicodeAndSpacePathsPassed": true,
+    "sameSessionActivationPassed": [
+      2022,
+      2025,
+      2026
+    ],
+    "activationUiPresentationAndShelfStubbed": true,
+    "physicalGuiDragAndShelfPersistenceVerified": false,
+    "reviewRegressions": [
+      "shelf_save_false",
+      "cached_drop_source",
+      "unknown_drop_source"
+    ]
   }
 }

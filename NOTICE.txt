@@ -1,37 +1,51 @@
-BraidTools — 开发预览 / Development preview
+BraidTools — 学习预览 / Learning preview
 
 许可证与署名 / License and attribution
 Copyright (c) 2026 Hsws9999
-本项目源码采用 MIT 许可证，完整条款见 LICENSE。
-Source is licensed under the MIT License; see LICENSE for the complete terms.
+本项目采用 MIT 许可证，完整条款见 LICENSE。
+This project uses the MIT License; see LICENSE for the complete terms.
+
+安装包 / Installer package
+完整 ZIP 包含 Windows Maya 2022、2025、2026 各自的 braidTools.mll，以及 Python 脚本、安装器和使用说明。
+解压全部文件（包括校验清单 BraidTools.runtime.json）后，在 Maya 中拖入 BraidTools_Install.py；Maya 2022 需要 Python 3 模式。
+安装器使用当前 Maya 用户目录，写入 modules/BraidTools、顶层 BraidTools.mod，并保存专属 Shelf 按钮。
+安装前会显示目标目录和 Shelf 影响，由使用者选择安装或取消。首次正常安装后打开面板，并建立 BraidTools 工具架上的 Braid 按钮。
+相同完整安装可重复运行；不同、不完整或非本安装器管理的同名内容会拒绝覆盖，本版本不执行升级或卸载。
+当前会话加载了其他目录的包时，只完成磁盘安装并提示重启后从原解压目录再次拖入安装器；同名用户 Shelf 不覆盖。
+无需管理员权限，不更改 Maya.env、userSetup.py 或系统环境变量。Maya 的脚本安全许可由使用者按提示确认。
+The complete ZIP includes separate native plugins for Windows Maya 2022, 2025 and 2026, scripts, an installer and documentation.
+Extract the whole package, including BraidTools.runtime.json, and drag BraidTools_Install.py into Maya. Maya 2022 requires Python 3 mode.
+The installer shows its target and Shelf changes for confirmation. A normal first installation opens the panel and adds a Braid button on the BraidTools Shelf.
+Identical complete installations can be rerun. Different, incomplete or unowned same-name targets are rejected; this version does not upgrade or uninstall.
+If another package is loaded, disk installation completes and activation waits for a restart and a second drag from the original extracted folder. Same-name user Shelves are not overwritten.
+No administrator access or Maya.env/userSetup.py/system-environment changes are needed. Users handle Maya's script-permission prompts.
 
 依赖 / Dependencies
 BraidTools 使用 Autodesk Maya API、C++/Python 标准库，以及用户 Maya 安装中自带的 PySide2 或 PySide6。
 本项目不打包 Autodesk Maya、Maya SDK 头文件与开发库、Qt/PySide 安装包或第三方付费工具。
 这些产品与依赖仍适用各自条款。用户需要自己的 Maya 安装及相应使用许可。
-BraidTools uses the Maya API, standard libraries, and the PySide binding bundled with the user's Maya installation.
-Maya, SDK headers/libraries, and Qt/PySide packages are not redistributed here.
+BraidTools uses the Maya API, standard libraries and the PySide binding bundled with the user's Maya installation.
+Maya, SDK headers/libraries and Qt/PySide packages are not redistributed here.
 Dependencies retain their own terms; users need their own Maya installation and applicable license.
 
-平台 / Platform
-仅面向 Windows x64。Maya 2022 仅支持 Python 3 模式。
-各 Maya 主版本需要分别编译的 plug-ins/<year>/braidTools.mll。
-Windows x64 only. Maya 2022 requires Python 3. Each Maya major version needs a separate binary.
+学习预览节点 ID / Learning-preview node ID
+节点名 / Node name: braidToolsGenerator
+未注册开发 ID / Unregistered development ID: 0x0007B7A1
 
-节点 ID 与分发 / Node ID and distribution
-节点名：braidToolsGenerator
-默认开发 ID：0x0007B7A1
-当前默认 ID 仅用于本地开发，尚不能作为已注册的公开分发 ID。
-公开分发二进制前，应取得属于本项目的 Autodesk 注册节点 ID，并重新编译和验证。
-CMake 公开构建要求 BRAIDTOOLS_PUBLIC_RELEASE=ON、实际获分配的 BRAIDTOOLS_NODE_ID，
-以及维护者核实注册归属后设置 BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON。
-该确认开关不会联网检查注册。不能随意改一个数字并称其为注册 ID。
-The default node ID is for local development. Obtain an Autodesk ID assigned to this project before public binary distribution.
-Public builds require the release flag, the assigned ID, and explicit registration confirmation.
-The build system does not verify registration online.
+Autodesk 的技术文档要求共享的依赖图插件使用全球唯一节点 ID。
+本学习预览仍使用上述未注册开发 ID，不代表已经获分配；可能与使用相同 ID 的其他插件发生加载冲突。
+Autodesk's technical documentation requires globally unique IDs for shared dependency-graph plugins.
+This learning preview still uses the unregistered development ID above. It is not an assigned project ID and may conflict with another plugin using the same ID.
 
-节点 ID 是场景兼容性的一部分。更换后必须验证现有场景迁移与保存重开，保留原开发版本供迁移前使用。
-Node IDs affect scene compatibility. Verify migration and save/reopen behavior before replacing an existing development installation.
+本包使用默认开发构建。BRAIDTOOLS_PUBLIC_RELEASE 保留为项目采用注册 ID 的正式发行构建模式。
+该模式要求实际获分配的 BRAIDTOOLS_NODE_ID，以及核实注册归属后设置 BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON。
+构建系统不会联网验证注册。开发 ID 不能用于这个正式发行构建模式。
+This package uses the default development build. BRAIDTOOLS_PUBLIC_RELEASE is retained for the project's formal registered-ID release mode.
+That mode requires the assigned BRAIDTOOLS_NODE_ID and explicit BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON after ownership verification.
+The build system does not verify registration online, and the development ID is rejected in that mode.
+
+节点 ID 是场景兼容性的一部分。未来更换为注册 ID 时，必须验证已有场景迁移和保存重开，保留旧版本供迁移前使用。
+Node IDs affect scene compatibility. A future registered-ID version requires migration and save/reopen checks; retain the old version until migration is verified.
 
 Autodesk 官方说明 / Official guidance:
 https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/Maya-Python-API/Dependency-Graph-Plug-in-Basics/Dependency-Graph-Plug-ins.html
@@ -40,6 +54,3 @@ https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/cpp_ref/class_m_type_id.ht
 数据依赖 / Scene dependencies
 包含生成节点的可编辑场景需要匹配插件。独立提取的源导向和烘焙网格无需本插件。
 Editable generator scenes require the matching plugin. Detached guide curves and baked meshes do not.
-
-本地安装说明描述手动操作及其影响；准备此项目不会自动安装模块、更改用户设置或执行外部发布。
-Installation instructions describe manual actions. Preparing this project does not install modules, change user settings, or publish anything externally.

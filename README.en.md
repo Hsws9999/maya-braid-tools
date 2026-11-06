@@ -2,9 +2,13 @@
 
 [中文](README.md) · [Chinese user guide](docs/使用说明.md) · [Changelog](CHANGELOG.md) · [Validation report (Chinese)](docs/验证记录.md)
 
+**[Download the complete learning-preview installer: Windows Maya 2022 / 2025 / 2026](https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools_Windows_Maya2022_2025_2026_Learning.zip)**
+
+Download the ZIP above → extract the complete folder → drag `BraidTools_Install.py` into Maya's viewport. The package includes all three version-specific `.mll` files; no compilation is needed. Use this complete package: GitHub's **Code → Download ZIP** is a source snapshot, not the ready-to-install plugin package.
+
 BraidTools generates editable three-strand braids along open NURBS curves in Windows Maya. It provides a Chinese dockable panel, standalone guide curves for subsequent XGen setup, and baked meshes.
 
-**Status: development preview; no public binary Release yet.** This repository provides source, build scripts and validation records. Build separately for each Maya version. The current node ID is for local development; public binaries require a project-registered ID and renewed verification.
+**Status: learning preview.** The complete package includes locally compiled Windows Maya 2022, 2025 and 2026 plugins. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
 
 ## Compatibility and verification
 
@@ -19,6 +23,8 @@ Windows x64 only. Every Maya major version requires its own `plug-ins/<year>/bra
 | 2026 | Python 3.11.9 / Qt 6.5.3 | Passed | 18/18 passed |
 
 Each functional suite ran in a separate `mayapy` process with a dedicated profile. All three versions also passed module discovery, version-specific loading, complete panel construction, parameter edits and undo, offscreen ramp drawing and mouse edits, and dialog invocation. Actual GUI dragging, viewport interaction and extended sessions have not yet been retested across these versions for this multi-version package. Offscreen checks are not viewport acceptance tests. The reserved 2023/2024 module entries and build options are not compatibility claims.
+
+All three versions also passed module discovery, actual `.mll` loading, generation of 27 guide curves, and saving/reopening a scene through paths containing **Chinese characters and spaces**. English-only paths are not required. Other arbitrary Unicode combinations have not all been tested.
 
 The panel uses Maya's bundled PySide2 or PySide6; do not install a separate Qt binding for this tool. Maya 2022 Python 2 mode is unsupported.
 
@@ -37,11 +43,13 @@ Closed paths, other strand counts, collision solving, automatic XGen Description
 
 This image illustrates the panel layout, not completed GUI verification on every Maya version.
 
-## Persistent user installation
+## Drag-and-drop installation
 
-These are general manual installation instructions. Installing the module makes its scripts and matching binary discoverable when that user's Maya starts. It does not open the panel automatically. No `Maya.env` or `userSetup.py` edit is required.
+1. Download the complete ZIP linked above and extract all files, keeping the directory structure.
+2. Open Windows Maya 2022, 2025 or 2026 and drag the extracted `BraidTools_Install.py` into the viewport. Maya 2022 must use Python 3 mode.
+3. Review the target directory and Shelf changes in the installer dialog, then click Install. Handle Maya's script-permission prompts as requested. A normal first installation opens the panel and creates a **Braid** button on the dedicated **BraidTools** Shelf.
 
-`C:/Program Files/Autodesk/Maya2026/modules` is also a valid module location for Maya 2026. The user-level `Documents/maya/modules` location is recommended here for a shared multi-version installation without writing to a program installation directory.
+The installer uses Maya's actual user directory, normally `Documents/maya`, and installs to `modules/BraidTools` with a sibling `modules/BraidTools.mod`. It also saves a dedicated Shelf button. Redirected Documents folders and custom `MAYA_APP_DIR` locations follow the path reported by Maya. No administrator access, `Maya.env` edit or `userSetup.py` edit is needed.
 
 ```text
 Documents/maya/modules/
@@ -55,24 +63,26 @@ Documents/maya/modules/
         └── 2026/braidTools.mll
 ```
 
-Place the complete package in the `BraidTools` folder. Copy its `BraidTools.mod` into the parent `modules` directory, **beside** the folder. The packaged `.mod` is an installation descriptor intended to be copied; its module root is `./BraidTools`. Leaving it only inside the package folder is not sufficient. If an installation already exists, close the relevant Maya sessions, keep a backup, then replace the complete package.
+An identical, complete installation managed by this installer can be run again without copying files. Different versions, incomplete installations and unowned same-name targets are rejected; this version does not upgrade existing packages. If another copy is already loaded, disk installation completes and Maya asks you to save and restart, then drag the installer from the original extracted folder again. A same-name user Shelf is not overwritten; use the installed `BraidTools_Open.py` when prompted.
 
-Use the actual Maya user directory if Documents is redirected or `MAYA_APP_DIR` is customized. The source repository excludes `.mll` files; build the required version before installing from source.
+For manual installation, place the complete package in `modules/BraidTools`, copy its `.mod` into the parent `modules` directory beside the folder, then restart Maya. The module root is `./BraidTools`. `C:/Program Files/Autodesk/Maya2026/modules` is also a valid location for Maya 2026; the installer uses the user directory for a shared multi-version installation.
 
-Restart Maya and run in the Script Editor's **Python** tab:
+Besides the Shelf button, the panel can be opened from the Script Editor's **Python** tab:
 
 ```python
 import braidtools
 braidtools.show()
 ```
 
-This loads the matching plugin and opens the panel. Open the tool before loading scenes that contain its editable generator nodes. For a session-only trial, drag `BraidTools_Open.py` from a complete package into the viewport.
+Open the tool before loading scenes that contain its editable generator nodes. `BraidTools_Open.py` is a session-only launcher from an extracted package; use `BraidTools_Install.py` for persistent installation.
 
 Select open curves, click “从所选曲线创建” (create from selected curves), then adjust the parameters. Move the source curve to move the braid. “提取 XGen 导向” extracts guide snapshots; “烘焙独立网格” creates independent mesh copies.
 
-For an update, close Maya, back up the existing installation and replace both the package and module descriptor. To disable it, close Maya and move both outside the module search directories. Keep a compatible plugin or baked copies for scenes that still depend on generator nodes. See [Autodesk module documentation](https://help.autodesk.com/cloudhelp/2026/CHS/Maya-DEVHELP/files/Distributing-Maya-Plug-ins/DistributingUsingModules/Maya_DEVHELP_Distributing_Maya_Plug_ins_DistributingUsingModules_ModuleDescriptionFiles_html.html).
+For an update, close Maya and move the old package and module descriptor to a backup outside the module search directories before installing the new complete package. To disable it, close Maya, move both outside the module search directories and remove its Shelf button if desired. Keep a compatible plugin or baked copies for scenes that still depend on generator nodes. See [Autodesk module documentation](https://help.autodesk.com/cloudhelp/2026/CHS/Maya-DEVHELP/files/Distributing-Maya-Plug-ins/DistributingUsingModules/Maya_DEVHELP_Distributing_Maya_Plug_ins_DistributingUsingModules_ModuleDescriptionFiles_html.html).
 
-## Build and test
+## Build and test (developers)
+
+Users of the complete installer package do not need to compile the plugin.
 
 The project declares CMake 3.21 as its minimum; also follow the target Maya toolchain requirements (CMake 3.27.3+ for Maya 2025/2026). A Microsoft C++ toolchain supporting C++17 and headers/libraries for the target Maya version are required. Consult that Maya version's Autodesk development requirements. The SDK is not bundled.
 
@@ -89,13 +99,13 @@ The local builds used Visual Studio 2022 / MSVC 19.44. Maya 2022's documented ba
 
 `tests/integration_maya.py` must run in a new target-version `mayapy` process. Provide `--plugin`, `--scripts`, `--output` and `--profile`; the profile must be a dedicated child of the output directory. Set `BRAIDTOOLS_ISOLATED_TEST=1` and `MAYA_APP_DIR` to that profile. `tests/module_qt_smoke.py` adds module-discovery and offscreen UI checks. Do not execute these tests in an existing interactive Maya session. Sanitize local paths in raw reports before publishing them.
 
-## Public-release requirements
+## Node ID and registered-ID release builds
 
-The `braidToolsGenerator` node currently defaults to local development ID `0x0007B7A1`. Before public binary distribution, obtain an Autodesk node ID assigned to this project. An arbitrary replacement number is not registration. See [NOTICE.txt](NOTICE.txt) and [Autodesk's node ID guidance](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/Maya-Python-API/Dependency-Graph-Plug-in-Basics/Dependency-Graph-Plug-ins.html).
+Autodesk's technical documentation requires globally unique IDs for shared dependency-graph plugins. This learning preview still uses **unregistered** development ID `0x0007B7A1` for `braidToolsGenerator`. It may conflict with another plugin using the same ID; it is not an assigned project ID. See [NOTICE.txt](NOTICE.txt) and [Autodesk's node ID guidance](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/Maya-Python-API/Dependency-Graph-Plug-in-Basics/Dependency-Graph-Plug-ins.html).
 
-A public build requires `BRAIDTOOLS_PUBLIC_RELEASE=ON`, the assigned `BRAIDTOOLS_NODE_ID`, and `BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON` after verifying ownership. The confirmation switch does not perform online registration checks. Rebuild each target and test scene migration, save and reopen after changing the ID; retain the development version for existing scenes until migration is verified.
+The learning preview uses the default development build. The project separately retains `BRAIDTOOLS_PUBLIC_RELEASE` for **formal release builds using a registered ID**. That mode requires `BRAIDTOOLS_PUBLIC_RELEASE=ON`, the assigned `BRAIDTOOLS_NODE_ID`, and `BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON` after verifying ownership. The confirmation switch does not perform online registration checks. Rebuild each target and test scene migration, save and reopen after changing the ID; retain the development version for existing scenes until migration is verified.
 
-Source and documentation are provided in this repository. Installation ZIPs and SHA256 checksums are planned for Releases after node ID registration and public-release verification. No public binary download is currently available.
+The complete learning-preview ZIP is in the repository's `downloads` directory, linked above. A future registered-ID version needs a fresh build and validation, including migration of scenes made with the development ID.
 
 ## License
 
