@@ -1,6 +1,6 @@
 # BraidTools
 
-[English](README.en.md) · [使用说明](docs/使用说明.md) · [变更记录](CHANGELOG.md) · [验证记录](docs/验证记录.md)
+[English](README.en.md) · [安装与更新教程](安装与更新教程.txt) · [使用说明](docs/使用说明.md) · [变更记录](CHANGELOG.md) · [验证记录](docs/验证记录.md)
 
 **[下载完整学习预览安装包：Windows Maya 2022／2023／2024／2025／2026](https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools1.0.zip)**
 

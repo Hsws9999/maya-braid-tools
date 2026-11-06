@@ -1,0 +1,294 @@
+﻿BraidTools 1.1.0 安装与更新教程
+适用：Windows x64 · Maya 2022 / 2023 / 2024 / 2025 / 2026
+
+先看这里
+
+• 第一次安装：按“二、首次安装”把 BraidTools_Install.py 拖入 Maya。
+• 已经装过：按“三、从旧版更新”备份旧安装，再完整复制新包到原位置。
+• 本版安装器不会覆盖旧版，也不会自动升级。反复拖入安装器不能代替更新步骤。
+• 安装 ZIP 的文件名仍是 BraidTools1.0.zip，本教程对应包内版本 1.1.0；请以实际加载的版本为准。
+• Maya 2023 / 2024 仅编译通过，属于兼容预览，尚未完成对应 Maya 主机和 GUI 验证。
+  Maya 2022 / 2025 / 2026 已有隔离功能、模块加载和离屏界面验证记录；这些记录不等于所有真实视口操作与长时间运行都已验收。
+
+一、下载与准备
+
+1. 从项目官方 GitHub 下载完整学习预览安装包：
+   https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools1.0.zip
+
+   项目首页及版本说明：
+   https://github.com/Hsws9999/maya-braid-tools
+
+   GitHub 的 Code → Download ZIP、Source code (zip) 或其他源码快照不是这里的完整安装包；不要把源码 ZIP 当作可直接安装的插件包。
+
+2. 在资源管理器中完整解压 ZIP，例如解压到“下载”中的一个独立文件夹。
+   不要从压缩包预览窗口里直接拖脚本，也不要只解压一个 .py 或 .mll 文件。
+   找到 BraidTools_Install.py 所在的那一层目录；以下“解压包根目录”都指这一层。
+
+3. 确认同一层至少有这些项目：
+   BraidTools_Install.py
+   BraidTools_Open.py
+   BraidTools.mod
+   BraidTools.runtime.json
+   icons
+   scripts
+   plug-ins
+
+   plug-ins 内应有 2022、2023、2024、2025、2026 五个文件夹，各含 braidTools.mll。
+   保留 LICENSE、NOTICE.txt 和包内其他文件。无需自行编译，也无需另装 Python、Qt 或 PySide。
+
+4. 使用 Windows x64 的 Maya 2022–2026。Maya 2022 必须使用 Python 3 模式，Python 2 不受支持。
+   若 Maya 给出脚本安全提示，确认文件来自上述项目后按 Maya 提示处理；无需关闭整套脚本安全机制。
+
+二、首次安装：拖入安装器
+
+1. 打开 Maya。
+
+2. 从解压包根目录，把 BraidTools_Install.py 拖入 Maya 的三维视口。
+   这个文件用于长期安装；BraidTools_Open.py 是打开工具的入口，两者用途不同。
+
+3. 阅读“安装 BraidTools”窗口，核对将写入的目标目录，再点击“安装”。
+   安装器将复制运行文件、登记模块，并尝试新建专属 BraidTools 工具架和按钮。
+   Maya 2023 / 2024 的窗口还会提示兼容预览状态。
+
+4. 首次正常安装后，工具面板会打开，顶部 BraidTools 工具架会出现一个金色麻花辫图标。
+   以后点击这个图标即可打开工具。
+   若提示需要重启，先保存工作、关闭并重开 Maya，再从原解压目录拖入同一个安装器一次。
+
+5. 按“四、安装或更新后的核对”确认加载版本。
+
+安装位置说明
+
+安装器以 Maya 实际返回的用户目录为准，通常是：
+C:/Users/你的用户名/Documents/maya/modules/
+
+“文档”目录被重定向、位于 OneDrive，或设置了自定义 MAYA_APP_DIR 时，实际位置可能不同。
+不要仅凭以上示例手工猜位置；安装窗口显示的目标位置才是本次安装位置。
+安装器不需要管理员权限，不修改 Maya.env、userSetup.py 或系统环境变量。
+
+长期安装的关键结构：
+
+实际 Maya 用户目录/
+└─ modules/
+   ├─ BraidTools.mod
+   └─ BraidTools/
+      ├─ BraidTools_Open.py
+      ├─ BraidTools.runtime.json
+      ├─ icons/
+      ├─ scripts/
+      │  └─ braidtools/
+      └─ plug-ins/
+         ├─ 2022/braidTools.mll
+         ├─ 2023/braidTools.mll
+         ├─ 2024/braidTools.mll
+         ├─ 2025/braidTools.mll
+         └─ 2026/braidTools.mll
+
+modules 顶层的 BraidTools.mod 必须与 BraidTools 文件夹并排。
+不要放成 modules/BraidTools/BraidTools/scripts 这样的重复套层结构。
+
+同一用户模块目录可供多个 Maya 年份使用，工具会选择对应年份的 .mll。
+Shelf 工具架属于各 Maya 的偏好设置；在一个年份创建按钮，不保证其他年份也自动出现按钮。
+其他年份可以从已安装目录拖入 BraidTools_Open.py，或使用下文的 Python 打开命令。
+
+三、从旧版更新：推荐完整替换到原安装位置
+
+这套流程适用于已有的长期模块安装。它保留现有工具架和按钮，不要求安装器覆盖旧版。
+以下操作都应在确认路径后进行。不要只替换一个 .mll，也不要把新文件直接合并覆盖进旧文件夹。
+
+1. 下载并完整解压新安装包，放到 modules 目录之外。
+   先不要从新包打开工具，以免当前 Maya 会话混用新旧文件。
+
+2. 确认并记下旧安装的位置。
+   若知道旧 BraidTools 文件夹和并排 BraidTools.mod 的位置，可直接记录。
+   若不确定，先用原来的图标打开工具，再打开 Maya 的 Script Editor（脚本编辑器），
+   切换到 Python 页签，运行以下只读查询：
+
+   import braidtools
+   from maya import cmds
+   print("当前脚本位置：", braidtools.__file__)
+   print("Maya 用户目录：", cmds.internalVar(userAppDir=True))
+
+   第一行结果通常以 BraidTools/scripts/braidtools/__init__.py 结尾。
+   向上找到 BraidTools 文件夹，再确认其外侧 modules 目录中有并排的 BraidTools.mod。
+   旧版也可能位于自定义模块目录或某个 Maya 的程序模块目录；更新时以旧版实际位置为准。
+   如果结果只指向临时解压包，而且没有长期模块登记，参照本节最后的“以前只临时拖入打开过”。
+
+3. 保存当前场景，并另存一份更新前的场景备份。
+   旧版文件和场景备份用于回滚；不要用新版本覆盖唯一一份重要旧场景。
+
+4. 关闭所有 Maya 窗口，包括其他年份的 Maya。
+   同一个安装目录可能被多个 Maya 使用。文件仍被占用时不要强行替换。
+
+5. 将旧的这两项一起移到 Maya 模块搜索目录之外，作为备份：
+   • 旧 BraidTools 文件夹；
+   • 原来与它并排的 BraidTools.mod。
+
+   可使用一个专门的备份位置，例如 D:/BraidTools_Backups/更新前日期/，
+   前提是这个位置没有被你加入任何 Maya 模块搜索路径。
+   移动后确认备份里两项都在，原 modules 位置已不再留有这两项。
+   不要仅在 modules 内改名成 BraidTools_old，也不要只修改 .mod 的扩展名。
+   若另一个模块目录也登记了旧 BraidTools，应同样备份移出，避免两个版本同时被发现。
+
+6. 在刚才腾空的原 modules 目录中，新建一个名为 BraidTools 的文件夹。
+   把新解压包根目录的全部文件及子文件夹复制进去。
+   完成后应能直接找到：
+   原 modules 目录/BraidTools/BraidTools_Open.py
+   原 modules 目录/BraidTools/scripts/braidtools/__init__.py
+   原 modules 目录/BraidTools/plug-ins/当前年份/braidTools.mll
+
+   如果外层解压文件夹名称很长，不要原样把它再套进 BraidTools 里面；复制它内部与安装器同级的内容。
+
+7. 再把新 BraidTools 文件夹内部的 BraidTools.mod 复制一份到原 modules 目录顶层。
+   此时应是：
+
+   原 modules 目录/
+   ├─ BraidTools.mod          ← 从新包复制出来的这一份
+   └─ BraidTools/
+      ├─ BraidTools.mod       ← 完整包内原有的这一份可以保留
+      ├─ BraidTools_Open.py
+      ├─ BraidTools_Install.py
+      ├─ scripts/
+      ├─ plug-ins/
+      └─ 其他完整包文件……
+
+   不需要编辑 .mod 内容；其中的 ./BraidTools 相对于顶层 .mod 所在目录解释。
+   不要修改 Maya.env 或 userSetup.py。
+
+8. 重新打开 Maya，先不要打开重要工作场景。
+   点击原有的 BraidTools 图标。原按钮若指向同一个安装位置，或执行 import braidtools，通常可继续使用。
+   本流程不会编辑或删除任何已有 Shelf，因此旧图标外观保持原样；不会自动换成新金色图标。
+
+9. 如果原图标打不开，或它原来指向某个旧的临时解压目录，
+   将“新安装位置”中的 BraidTools_Open.py 拖入 Maya 视口打开。
+   也可在 Maya 的 Script Editor → Python 页签执行：
+
+   import braidtools
+   braidtools.show()
+
+   手动复制不会自动新建或修改工具架按钮。保留旧按钮不等于它指向的外部旧路径会自动更新。
+   不要为了更新按钮，再向当前会话拖入旧备份里的脚本。
+
+10. 按下一节核对版本、来源目录和分股控制按钮，再打开旧场景的副本。
+    含生成节点的可编辑场景，应先打开工具、加载插件，再打开场景。
+
+为什么手动更新后不再拖安装器？
+
+安装器只对“由本安装器管理、文件内容完全相同”的安装执行重复打开。
+完整手动复制的目录含有 README、docs、包内 .mod 等额外文件，会被视为非其管理的内容。
+此时安装器提示拒绝覆盖是预期的保护行为，不表示手动更新失败。
+按上述入口打开并核对即可，不需要删掉额外文件来迁就安装器。
+
+以前只临时拖入打开过
+
+若以前只把解压包里的 BraidTools_Open.py 拖入 Maya，并未安装模块，
+保存工作并关闭所有 Maya 后，保留原解压包作备份；重新打开 Maya，按“二、首次安装”安装完整新包。
+旧的自制按钮若仍指向原解压目录，不要继续使用它来启动新版；使用新安装生成的按钮或已安装目录的入口。
+
+四、安装或更新后的核对
+
+1. 在新的 Maya 会话中打开工具。面板应有：
+   “分股曲线 · 单独调整三股”区域；
+   “创建三条分股控制曲线”按钮；
+   “选择第 1 股控制点”“选择第 2 股控制点”“选择第 3 股控制点”按钮。
+   尚未选择辫子时按钮变灰是正常的；仅看到按钮也不等于所有功能已经通过实机验证。
+
+2. 当前面板标题不会显示版本号。请在 Script Editor 的 Python 页签运行：
+
+   import braidtools
+   from maya import cmds
+   braidtools.show()
+   print("脚本版本：", braidtools.__version__)
+   print("插件版本：", cmds.pluginInfo("braidTools", query=True, version=True))
+   print("脚本位置：", braidtools.__file__)
+   print("插件位置：", cmds.pluginInfo("braidTools", query=True, path=True))
+
+   本教程对应的预期结果：脚本版本和插件版本都是 1.1.0。
+   脚本应来自这次安装的 BraidTools/scripts/braidtools；
+   插件应来自同一个 BraidTools/plug-ins/当前 Maya 年份。
+   若版本或来源不一致，先保存工作并关闭所有 Maya，检查重复模块登记和旧按钮路径。
+   不要通过单独替换 .mll、在运行中的 Maya 热重载脚本或反复打开不同目录来拼接版本。
+
+3. 使用一个场景副本做简单检查：选择一条开放 NURBS 曲线，点击“从所选曲线创建”；
+   选择生成的辫子，再创建三条分股控制曲线，确认能够选中对应股的控制点。
+   确认结果后另存测试副本。Maya 2023 / 2024 仍需在你的实际环境中验证，不应因安装成功就视为完整兼容。
+
+五、需要恢复旧版本时
+
+1. 保存并保留新版本场景，关闭所有 Maya。
+
+2. 把当前新版本的 BraidTools 文件夹和并排 BraidTools.mod 一起移到模块搜索目录之外。
+   保留它们，避免回滚后需要再次打开新版场景时找不到对应插件。
+
+3. 将更新前备份的旧 BraidTools 文件夹和配套 BraidTools.mod，完整放回原 modules 位置。
+   不要混用旧版 .mll 与新版 scripts，也不要混用两个版本的 .mod。
+
+4. 重新启动 Maya，先打开旧版工具，再打开更新前的场景备份。
+   原位置不变且按钮仍指向该位置时，已有按钮可继续使用。
+
+场景兼容注意
+
+旧版辫子可以在 1.1.0 中启用三股独立曲线控制。
+启用分股控制后保存的可编辑场景，需要 BraidTools 1.1.0 或更高版本。
+回滚插件不会自动把这类新场景转换回旧格式；不要用旧版打开后覆盖唯一的新场景。
+需要交给没有匹配插件的环境时，先在 1.1.0 中另存独立导向曲线或烘焙网格副本。
+
+六、常见提示与处理
+
+“目标已有不同、不完整或非本安装器管理的同名内容，未覆盖”
+安装器没有修改原安装。已有旧版按第三节完整更新；若已经手动更新成功，直接打开工具并核对版本，不再运行安装器。
+
+“BraidTools 已是同一版本”
+说明目标是与这份解压包完全相同、由安装器管理的安装；运行文件未再次复制。
+它只比较当前这份包，不代表已经联网检查了 GitHub 的最新版本。
+
+“磁盘安装已完成，当前会话继续使用原包”“已加载其他目录的插件／脚本”
+保存工作并关闭所有 Maya，再启动目标版本。
+如果是安装器提示重启，重启后从原解压包再拖一次安装器；如果采用手动更新，按第三节入口打开。
+仍有冲突时检查是否存在第二份 .mod 登记，或旧图标是否指向其他解压目录。
+
+“已有同名 BraidTools 工具架”或“已有同名 shelf_BraidTools.mel”
+安装器保留已有工具架，不会覆盖它。运行文件可能已经安装完成。
+从提示的已安装目录拖入 BraidTools_Open.py 打开；无需删除现有用户工具架才能使用。
+
+“工具架按钮已创建，但保存失败”或“工具已打开，但快捷按钮未创建”
+本次面板可用，但重启后按钮可能不存在。先保留提示中的安装路径；重开后可从已安装目录拖入 BraidTools_Open.py。
+文件复制成功和工具架保存成功是两件事，以具体提示为准。
+
+“文件缺损或与运行清单不一致”“运行文件清单无法读取”
+重新下载并完整解压官方安装 ZIP，不要混用两个包的文件，也不要漏掉 BraidTools.runtime.json。
+安装器会校验五个年份的运行文件，不能只保留自己当前使用的年份。
+
+“源包与安装目标重合或相互包含”
+把完整 ZIP 重新解压到 modules 之外的独立普通目录，再从那里运行安装器。
+不要在已安装的 BraidTools 目录中运行安装器来更新自己。
+
+“路径包含链接或目录联接”
+本安装器要求普通目录，不接受符号链接或目录联接。
+先确认实际路径；不要为绕过提示临时修改 Maya.env、userSetup.py 或全局环境变量。
+
+“无法导入 braidtools”或 No module named braidtools
+检查顶层 BraidTools.mod 是否与 BraidTools 文件夹并排，是否套了额外一层目录；确认使用的是 Maya 实际用户目录或已生效的模块目录，然后重启 Maya。
+在 Script Editor 中使用 Python 页签，不要在 MEL 页签运行 Python 代码。
+
+“缺少当前 Maya 年份的插件”或 .mll 无法加载
+本包应含 2022–2026 五个年份；重新核对完整包和当前 Maya 年份。
+不要复制、重命名其他年份的 .mll 代替。2023 / 2024 仍属于未完成宿主验证的兼容预览。
+保存 Script Editor 中的完整报错，作为定位依据。
+
+“.mll 无法替换”或 Windows 提示文件正在使用
+关闭全部 Maya 及仍在运行、加载该插件的 Maya 后台任务，再复制完整包。
+不要强制删除正在使用的插件，也不要只换单个二进制文件。
+
+Maya 2022 出现 Python 语法错误
+确认 Maya 运行在 Python 3 模式；本包不支持 Maya 2022 的 Python 2 模式。
+
+工具能打开，但没有分股控制区域，或版本仍为旧版
+先检查第四节显示的脚本和插件来源，确认没有旧按钮指向临时目录，也没有另一份模块登记抢先被发现。
+关闭所有 Maya 后重新核对完整包，再启动；不要在同一会话混开多个版本。
+
+节点 ID 冲突
+本学习预览仍使用未注册开发 ID 0x0007B7A1。
+停止同时加载发生冲突的插件组合，不要随意改 ID 绕过；具体说明见包内 NOTICE.txt。
+
+完整功能说明：docs/使用说明.md
+版本、验证范围与许可证：README.md、docs/验证记录.md、LICENSE、NOTICE.txt
