@@ -1,5 +1,12 @@
 # 变更记录 / Changelog
 
+## 1.0.2 — 金色麻花辫工具架图标
+
+- 新建 BraidTools 工具架按钮采用金色几何麻花辫图标，提供透明 PNG 的 32、64、128 像素版本，并纳入运行文件校验与安装清单。
+- 移除新按钮上的 Braid 覆盖文字；保留已有工具架和按钮，不自动替换旧图标或升级既有安装。
+- 沿用现有 C++ 二进制、建模功能与场景参数格式。
+- English: add a gold geometric braid Shelf icon in 32/64/128 px PNG sizes for newly created buttons. Existing Shelves, buttons and installations are preserved; this update does not replace old icons automatically.
+
 ## 1.0.1 — 删除所选辫子
 
 - 在列表旁新增“删除所选辫子…”；支持多选，确认窗口固定目标身份并列出名称，默认取消。

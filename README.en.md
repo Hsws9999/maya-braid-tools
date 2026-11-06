@@ -8,7 +8,7 @@ Download the ZIP above → extract the complete folder → drag `BraidTools_Inst
 
 BraidTools generates editable three-strand braids along open NURBS curves in Windows Maya. It provides a Chinese dockable panel, standalone guide curves for subsequent XGen setup, and baked meshes.
 
-**Status: 1.0.1 learning preview.** The complete package includes locally compiled Windows Maya 2022, 2025 and 2026 plugins. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
+**Status: 1.0.2 learning preview.** The complete package includes locally compiled Windows Maya 2022, 2025 and 2026 plugins. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
 
 ## Compatibility and verification
 
@@ -48,7 +48,9 @@ This image shows the 1.0.0 layout; 1.0.1 adds a delete-selected-braids button be
 
 1. Download the complete ZIP linked above and extract all files, keeping the directory structure.
 2. Open Windows Maya 2022, 2025 or 2026 and drag the extracted `BraidTools_Install.py` into the viewport. Maya 2022 must use Python 3 mode.
-3. Review the target directory and Shelf changes in the installer dialog, then click Install. Handle Maya's script-permission prompts as requested. A normal first installation opens the panel and creates a **Braid** button on the dedicated **BraidTools** Shelf.
+3. Review the target directory and Shelf changes in the installer dialog, then click Install. Handle Maya's script-permission prompts as requested. A normal first installation opens the panel and creates a **gold braid icon** on the dedicated **BraidTools** Shelf.
+
+The geometric gold braid icon is supplied as transparent 32, 64 and 128 px PNGs for Maya to choose according to the button size. It is used only for newly created buttons; existing Shelves and buttons are preserved. Old icons and existing installations are not upgraded automatically.
 
 The installer uses Maya's actual user directory, normally `Documents/maya`, and installs to `modules/BraidTools` with a sibling `modules/BraidTools.mod`. It also saves a dedicated Shelf button. Redirected Documents folders and custom `MAYA_APP_DIR` locations follow the path reported by Maya. No administrator access, `Maya.env` edit or `userSetup.py` edit is needed.
 
@@ -57,6 +59,7 @@ Documents/maya/modules/
 ├── BraidTools.mod
 └── BraidTools/
     ├── BraidTools_Open.py
+    ├── icons/
     ├── scripts/braidtools/
     └── plug-ins/
         ├── 2022/braidTools.mll

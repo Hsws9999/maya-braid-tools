@@ -9,7 +9,7 @@ This project uses the MIT License; see LICENSE for the complete terms.
 完整 ZIP 包含 Windows Maya 2022、2025、2026 各自的 braidTools.mll，以及 Python 脚本、安装器和使用说明。
 解压全部文件（包括校验清单 BraidTools.runtime.json）后，在 Maya 中拖入 BraidTools_Install.py；Maya 2022 需要 Python 3 模式。
 安装器使用当前 Maya 用户目录，写入 modules/BraidTools、顶层 BraidTools.mod，并保存专属 Shelf 按钮。
-安装前会显示目标目录和 Shelf 影响，由使用者选择安装或取消。首次正常安装后打开面板，并建立 BraidTools 工具架上的 Braid 按钮。
+安装前会显示目标目录和 Shelf 影响，由使用者选择安装或取消。首次正常安装后打开面板，并建立 BraidTools 工具架上的金色麻花辫图标。已有工具架和按钮保持原样，不自动替换旧图标。
 相同完整安装可重复运行；不同、不完整或非本安装器管理的同名内容会拒绝覆盖，本版本不执行升级或卸载。
 当前会话加载了其他目录的包时，只完成磁盘安装并提示重启后从原解压目录再次拖入安装器；同名用户 Shelf 不覆盖。
 无需管理员权限，不更改 Maya.env、userSetup.py 或系统环境变量。Maya 的脚本安全许可由使用者按提示确认。

@@ -26,6 +26,7 @@ MANIFEST_IDENTITY = "BraidTools.runtime.v1"
 SHELF_TAG = "BraidTools/installer/v1"
 RUNTIME_FILES = (
     "BraidTools_Open.py", "LICENSE", "NOTICE.txt",
+    "icons/braidTools.png", "icons/braidTools_64.png", "icons/braidTools_128.png",
     "scripts/braidtools/__init__.py", "scripts/braidtools/_qt.py",
     "scripts/braidtools/api.py", "scripts/braidtools/lifecycle.py",
     "scripts/braidtools/ui.py",
@@ -110,7 +111,7 @@ def runtime_manifest(sourceRoot):
     source = _absolute(sourceRoot)
     return {
         "schema": 1, "identity": MANIFEST_IDENTITY, "package": PACKAGE_NAME,
-        "version": "1.0.1", "platform": "win64", "maya_versions": list(SUPPORTED_MAYA),
+        "version": "1.0.2", "platform": "win64", "maya_versions": list(SUPPORTED_MAYA),
         "files": {name: _digest(_regular_file(source, name)) for name in SOURCE_FILES},
     }
 
@@ -298,8 +299,12 @@ def _ensure_shelf(cmds, package_root):
             raise InstallError("已有同名 shelf_BraidTools.mel，未覆盖；可拖入已安装目录的 BraidTools_Open.py 打开。")
     shelf = mel.eval('addNewShelfTab "BraidTools";')
     cmds.shelfLayout(shelf, edit=True, docTag=SHELF_TAG)
+    icons = os.path.join(_absolute(package_root), "icons")
     cmds.shelfButton(parent=shelf, label="BraidTools", annotation="打开已安装的 BraidTools 麻花辫工具",
-                     image="commandButton.png", imageOverlayLabel="Braid", docTag=SHELF_TAG,
+                     image1=os.path.join(icons, "braidTools.png"),
+                     image2=os.path.join(icons, "braidTools_64.png"),
+                     image3=os.path.join(icons, "braidTools_128.png"),
+                     imageOverlayLabel="", docTag=SHELF_TAG,
                      sourceType="python", command=command)
     os.makedirs(default_shelves, exist_ok=True)
     if not cmds.saveShelf(shelf, os.path.join(default_shelves, "shelf_BraidTools")):
@@ -333,7 +338,7 @@ def _activate_installed(result, major):
         if not _within(braidtools.__file__, os.path.join(scripts, "braidtools")):
             raise InstallError("脚本来源与安装目录不一致；请保存工作并重启 Maya。")
         braidtools.show()
-        shortcut_note = "以后点击 BraidTools 工具架中的 Braid 按钮打开。"
+        shortcut_note = "以后点击 BraidTools 工具架中的按钮打开。"
         try:
             _ensure_shelf(cmds, package)
         except Exception as exc:

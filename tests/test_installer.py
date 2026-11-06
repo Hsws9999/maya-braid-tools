@@ -27,6 +27,7 @@ MANIFEST_NAME = 'BraidTools.runtime.json'
 DESCRIPTOR_NAME = 'BraidTools.mod'
 EXPECTED_SOURCE_FILES = (
     'BraidTools.mod', 'BraidTools_Open.py', 'LICENSE', 'NOTICE.txt',
+    'icons/braidTools.png', 'icons/braidTools_64.png', 'icons/braidTools_128.png',
     'scripts/braidtools/__init__.py', 'scripts/braidtools/_qt.py',
     'scripts/braidtools/api.py', 'scripts/braidtools/lifecycle.py',
     'scripts/braidtools/ui.py',
@@ -119,7 +120,7 @@ class InstallerAcceptanceTests(unittest.TestCase):
             records[relative] = {'sha256': hashlib.sha256(data).hexdigest(), 'size': len(data)}
         write_manifest(destination, {
             'schema': 1, 'identity': 'BraidTools.runtime.v1', 'package': 'BraidTools',
-            'version': '1.0.0', 'platform': 'win64', 'maya_versions': [2022, 2025, 2026],
+            'version': '1.0.2', 'platform': 'win64', 'maya_versions': [2022, 2025, 2026],
             'files': records,
         })
         # Extracted packages can contain user notes and development files;

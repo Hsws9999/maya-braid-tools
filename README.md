@@ -8,7 +8,7 @@
 
 BraidTools 是面向 Windows Maya 的三股麻花辫建模插件。它沿开放 NURBS 曲线生成可编辑的编织模型，提供中文可停靠面板，并能提取独立的 XGen 源导向曲线和烘焙网格。
 
-**当前状态：1.0.1 学习预览版。** 完整安装包提供 Windows Maya 2022、2025、2026 的自编插件。节点仍使用未注册开发 ID `0x0007B7A1`，可能与使用同一 ID 的其他插件冲突；未来更换注册 ID 时需要处理已有场景迁移。项目采用 MIT 许可证，源码和构建方式同时公开。
+**当前状态：1.0.2 学习预览版。** 完整安装包提供 Windows Maya 2022、2025、2026 的自编插件。节点仍使用未注册开发 ID `0x0007B7A1`，可能与使用同一 ID 的其他插件冲突；未来更换注册 ID 时需要处理已有场景迁移。项目采用 MIT 许可证，源码和构建方式同时公开。
 
 ## 兼容性与验证范围
 
@@ -48,7 +48,9 @@ BraidTools 是面向 Windows Maya 的三股麻花辫建模插件。它沿开放 
 
 1. 下载页首的完整安装 ZIP，并解压全部内容，保留子文件夹结构。
 2. 打开 Windows Maya 2022、2025 或 2026，将解压后的 `BraidTools_Install.py` 拖入视口。Maya 2022 使用 Python 3 模式。
-3. 在安装窗口核对目标目录和 Shelf 影响后点击“安装”；Maya 的脚本许可按其提示确认。首次正常安装会打开面板，并添加 **BraidTools** 工具架上的 **Braid** 按钮，以后点击按钮即可打开。
+3. 在安装窗口核对目标目录和 Shelf 影响后点击“安装”；Maya 的脚本许可按其提示确认。首次正常安装会打开面板，并添加 **BraidTools** 工具架上的**金色麻花辫图标**，以后点击图标即可打开。
+
+图标采用金色几何麻花辫造型，随包提供 32、64、128 像素透明 PNG，供 Maya 按按钮尺寸选择。该图标仅用于新建按钮；已有工具架和按钮保持原样，不自动替换旧图标或升级既有安装。
 
 安装器根据 Maya 的实际用户目录把文件安装到 `modules/BraidTools`，在 `modules` 顶层放置 `BraidTools.mod`，并保存专属 Shelf 按钮。通常位于 `Documents/maya/modules`；文档目录被重定向或使用自定义 `MAYA_APP_DIR` 时，以 Maya 返回的用户目录为准。安装无需管理员权限，不改 `Maya.env` 或 `userSetup.py`。
 
@@ -59,6 +61,7 @@ Documents/maya/modules/
 ├── BraidTools.mod
 └── BraidTools/
     ├── BraidTools_Open.py
+    ├── icons/
     ├── scripts/braidtools/
     └── plug-ins/
         ├── 2022/braidTools.mll
