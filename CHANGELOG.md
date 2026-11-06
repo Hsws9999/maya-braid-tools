@@ -1,5 +1,14 @@
 # 变更记录 / Changelog
 
+## 1.0.3 — Maya 2023／2024 兼容预览
+
+- 完整安装包新增 Windows Maya 2023、2024 对应的 `.mll`，覆盖 2022–2026 五个年份；下载文件名保持 `BraidTools1.0.zip`。
+- 新增两版由未修改的 C++ 源码分别链接官方基础版 DevKit，完成 Release x64 编译及二进制静态检查。两版主程序未安装，尚未验证加载、Python/Qt、建模功能或 GUI；仅作为兼容预览提供。
+- Maya 2023 官方要求 Visual Studio 2019，本次使用 Visual Studio 2022，偏离官方指定环境；Maya 2024 官方要求 Visual Studio 2022。工具链和证据见[验证记录](docs/验证记录.md)。
+- 安装器识别五个年份，在 2023／2024 原安装确认窗口追加兼容预览说明；安装核心及版本确认测试 19/19 通过。
+- 原 2022、2025、2026 三个二进制及 C++ 源码逐字节不变，建模逻辑、节点 ID 和场景参数格式不变。已有 18/12/8 项验收仍为这三版的历史结果，本次未重跑 Maya 测试。
+- English: add Windows Maya 2023/2024 compatibility-preview binaries and installer support, retaining the filename `BraidTools1.0.zip`. Both pass compilation and binary static checks only; host and GUI validation is pending. The 2023 build uses VS2022 instead of Autodesk's specified VS2019. All 19 installer tests pass. Original 2022/2025/2026 binaries and C++ source remain unchanged; their prior Maya test results are historical.
+
 ## 1.0.2 — 金色麻花辫工具架图标
 
 - 新建 BraidTools 工具架按钮采用金色几何麻花辫图标，提供透明 PNG 的 32、64、128 像素版本，并纳入运行文件校验与安装清单。

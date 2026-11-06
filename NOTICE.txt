@@ -6,26 +6,28 @@ Copyright (c) 2026 Hsws9999
 This project uses the MIT License; see LICENSE for the complete terms.
 
 安装包 / Installer package
-完整 ZIP 包含 Windows Maya 2022、2025、2026 各自的 braidTools.mll，以及 Python 脚本、安装器和使用说明。
+1.0.3 完整 ZIP（文件名保持 BraidTools1.0.zip）包含 Windows Maya 2022、2023、2024、2025、2026 各自的 braidTools.mll，以及 Python 脚本、安装器和使用说明。
+新增 2023/2024 为仅编译通过的兼容预览，未进行主机加载、Python/Qt、功能或 GUI 验证；安装确认窗口会显示该状态。2022/2025/2026 保留原有二进制与历史验证记录。
 解压全部文件（包括校验清单 BraidTools.runtime.json）后，在 Maya 中拖入 BraidTools_Install.py；Maya 2022 需要 Python 3 模式。
 安装器使用当前 Maya 用户目录，写入 modules/BraidTools、顶层 BraidTools.mod，并保存专属 Shelf 按钮。
 安装前会显示目标目录和 Shelf 影响，由使用者选择安装或取消。首次正常安装后打开面板，并建立 BraidTools 工具架上的金色麻花辫图标。已有工具架和按钮保持原样，不自动替换旧图标。
 相同完整安装可重复运行；不同、不完整或非本安装器管理的同名内容会拒绝覆盖，本版本不执行升级或卸载。
 当前会话加载了其他目录的包时，只完成磁盘安装并提示重启后从原解压目录再次拖入安装器；同名用户 Shelf 不覆盖。
 无需管理员权限，不更改 Maya.env、userSetup.py 或系统环境变量。Maya 的脚本安全许可由使用者按提示确认。
-The complete ZIP includes separate native plugins for Windows Maya 2022, 2025 and 2026, scripts, an installer and documentation.
+The complete 1.0.3 ZIP (still named BraidTools1.0.zip) includes separate native plugins for Windows Maya 2022, 2023, 2024, 2025 and 2026, scripts, an installer and documentation.
+The new 2023/2024 binaries are compatibility previews with compilation checks only. Host loading, Python/Qt, functionality and GUI behavior remain untested; the installer confirmation states this. The original 2022/2025/2026 binaries and historical validation records are retained.
 Extract the whole package, including BraidTools.runtime.json, and drag BraidTools_Install.py into Maya. Maya 2022 requires Python 3 mode.
-The installer shows its target and Shelf changes for confirmation. A normal first installation opens the panel and adds a Braid button on the BraidTools Shelf.
+The installer shows its target and Shelf changes for confirmation. A normal first installation opens the panel and adds a gold braid icon on the BraidTools Shelf. Existing Shelves and buttons are preserved; old icons are not replaced automatically.
 Identical complete installations can be rerun. Different, incomplete or unowned same-name targets are rejected; this version does not upgrade or uninstall.
 If another package is loaded, disk installation completes and activation waits for a restart and a second drag from the original extracted folder. Same-name user Shelves are not overwritten.
 No administrator access or Maya.env/userSetup.py/system-environment changes are needed. Users handle Maya's script-permission prompts.
 
 依赖 / Dependencies
 BraidTools 使用 Autodesk Maya API、C++/Python 标准库，以及用户 Maya 安装中自带的 PySide2 或 PySide6。
-本项目不打包 Autodesk Maya、Maya SDK 头文件与开发库、Qt/PySide 安装包或第三方付费工具。
+本项目不打包 Autodesk Maya、Maya SDK、其头文件与开发库、Qt/PySide 安装包或第三方工具。
 这些产品与依赖仍适用各自条款。用户需要自己的 Maya 安装及相应使用许可。
 BraidTools uses the Maya API, standard libraries and the PySide binding bundled with the user's Maya installation.
-Maya, SDK headers/libraries and Qt/PySide packages are not redistributed here.
+Maya, the SDK, its headers/libraries, Qt/PySide packages and third-party tools are not redistributed here.
 Dependencies retain their own terms; users need their own Maya installation and applicable license.
 
 学习预览节点 ID / Learning-preview node ID

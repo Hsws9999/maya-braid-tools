@@ -2,31 +2,31 @@
 
 [中文](README.md) · [Chinese user guide](docs/使用说明.md) · [Changelog](CHANGELOG.md) · [Validation report (Chinese)](docs/验证记录.md)
 
-**[Download the complete learning-preview installer: Windows Maya 2022 / 2025 / 2026](https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools1.0.zip)**
+**[Download the complete learning-preview installer: Windows Maya 2022 / 2023 / 2024 / 2025 / 2026](https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools1.0.zip)**
 
-Download the ZIP above → extract the complete folder → drag `BraidTools_Install.py` into Maya's viewport. The package includes all three version-specific `.mll` files; no compilation is needed. Use this complete package: GitHub's **Code → Download ZIP** is a source snapshot, not the ready-to-install plugin package.
+Download the ZIP above → extract the complete folder → drag `BraidTools_Install.py` into Maya's viewport. The package includes all five version-specific `.mll` files; no compilation is needed. **The new 2023/2024 binaries are compatibility previews with compilation checks only; Maya host and GUI testing is pending.** Use this complete package: GitHub's **Code → Download ZIP** is a source snapshot, not the ready-to-install plugin package.
 
 BraidTools generates editable three-strand braids along open NURBS curves in Windows Maya. It provides a Chinese dockable panel, standalone guide curves for subsequent XGen setup, and baked meshes.
 
-**Status: 1.0.2 learning preview.** The complete package includes locally compiled Windows Maya 2022, 2025 and 2026 plugins. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
+**Status: 1.0.3 learning preview.** The complete package includes locally compiled Windows Maya 2022–2026 plugins; the filename remains `BraidTools1.0.zip`. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
 
 ## Compatibility and verification
 
 Windows x64 only. Every Maya major version requires its own `plug-ins/<year>/braidTools.mll`; copying or renaming another version's binary does not provide compatibility.
 
-| Maya | Tested Python / Qt | Build | Isolated functional tests |
+| Maya | Tested Python / Qt | Build | Isolated functional test record |
 | --- | --- | --- | --- |
 | 2022 | Python 3.7.7 / Qt 5.15.2 | Passed | 18/18 passed; Python 3 mode only |
-| 2023 | Not tested | No binary | Not tested |
-| 2024 | Not tested | No binary | Not tested |
+| 2023 | Not tested | Passed; compatibility preview | Not tested |
+| 2024 | Not tested | Passed; compatibility preview | Not tested |
 | 2025 | Python 3.11.4 / Qt 6.5.3 | Passed | 18/18 passed |
 | 2026 | Python 3.11.9 / Qt 6.5.3 | Passed | 18/18 passed |
 
-Each functional suite ran in a separate `mayapy` process with a dedicated profile. All three versions also passed module discovery, version-specific loading, complete panel construction, parameter edits and undo, offscreen ramp drawing and mouse edits, and dialog invocation. Actual GUI dragging, viewport interaction and extended sessions have not yet been retested across these versions for this multi-version package. Offscreen checks are not viewport acceptance tests. The reserved 2023/2024 module entries and build options are not compatibility claims.
+The 2022, 2025 and 2026 results are historical isolated-test records. Their original `.mll` files are retained, and these Maya tests were not rerun for this update. Each suite ran in a separate `mayapy` process with a dedicated profile. Those three versions also passed module discovery, version-specific loading, complete panel construction, parameter edits and undo, offscreen ramp drawing and mouse edits, and dialog invocation. Actual GUI dragging, viewport interaction and extended sessions have not yet been retested across these versions for this multi-version package. Offscreen checks are not viewport acceptance tests.
 
 All three versions also passed module discovery, actual `.mll` loading, generation of 27 guide curves, and saving/reopening a scene through paths containing **Chinese characters and spaces**. English-only paths are not required. Other arbitrary Unicode combinations have not all been tested.
 
-The panel uses Maya's bundled PySide2 or PySide6; do not install a separate Qt binding for this tool. Maya 2022 Python 2 mode is unsupported.
+The panel uses Maya's bundled PySide2 or PySide6; do not install a separate Qt binding for this tool. Maya 2022 Python 2 mode is unsupported. Maya 2023 and 2024 are not installed on the build machine. Their new binaries have only been compiled; loading, Python/Qt, functionality and GUI behavior remain untested. The five versions have not all passed runtime validation.
 
 ## Features and limits
 
@@ -47,8 +47,8 @@ This image shows the 1.0.0 layout; 1.0.1 adds a delete-selected-braids button be
 ## Drag-and-drop installation
 
 1. Download the complete ZIP linked above and extract all files, keeping the directory structure.
-2. Open Windows Maya 2022, 2025 or 2026 and drag the extracted `BraidTools_Install.py` into the viewport. Maya 2022 must use Python 3 mode.
-3. Review the target directory and Shelf changes in the installer dialog, then click Install. Handle Maya's script-permission prompts as requested. A normal first installation opens the panel and creates a **gold braid icon** on the dedicated **BraidTools** Shelf.
+2. Open Windows Maya 2022, 2023, 2024, 2025 or 2026 and drag the extracted `BraidTools_Install.py` into the viewport. Maya 2022 must use Python 3 mode.
+3. Review the target directory and Shelf changes in the installer dialog, then click Install. The same dialog includes a compatibility-preview note for 2023/2024. Handle Maya's script-permission prompts as requested. A normal first installation opens the panel and creates a **gold braid icon** on the dedicated **BraidTools** Shelf.
 
 The geometric gold braid icon is supplied as transparent 32, 64 and 128 px PNGs for Maya to choose according to the button size. It is used only for newly created buttons; existing Shelves and buttons are preserved. Old icons and existing installations are not upgraded automatically.
 
@@ -63,6 +63,8 @@ Documents/maya/modules/
     ├── scripts/braidtools/
     └── plug-ins/
         ├── 2022/braidTools.mll
+        ├── 2023/braidTools.mll
+        ├── 2024/braidTools.mll
         ├── 2025/braidTools.mll
         └── 2026/braidTools.mll
 ```
@@ -88,7 +90,7 @@ For an update, close Maya and move the old package and module descriptor to a ba
 
 Users of the complete installer package do not need to compile the plugin.
 
-The project declares CMake 3.21 as its minimum; also follow the target Maya toolchain requirements (CMake 3.27.3+ for Maya 2025/2026). A Microsoft C++ toolchain supporting C++17 and headers/libraries for the target Maya version are required. Consult that Maya version's Autodesk development requirements. The SDK is not bundled.
+The project declares CMake 3.21 as its minimum; also follow the target Maya toolchain requirements (CMake 3.22.1+ for Maya 2024 and 3.27.3+ for Maya 2025/2026). A Microsoft C++ toolchain supporting C++17 and headers/libraries for the target Maya version are required. Consult that Maya version's Autodesk development requirements and the [Autodesk Maya API / DevKit page](https://aps.autodesk.com/developer/overview/maya-api). The SDK, headers, development libraries and third-party tools are not redistributed.
 
 Run from the project root in PowerShell to build a local Maya 2026 binary at `plug-ins/2026/braidTools.mll`:
 
@@ -99,7 +101,9 @@ cmake --build build/2026 --config Release
 
 Change the version, SDK path and build directory together for another year. CMake checks that the selected SDK matches `MAYA_VERSION`. Do not reuse a build cache across versions or replace a binary loaded in Maya.
 
-The local builds used Visual Studio 2022 / MSVC 19.44. Maya 2022's documented baseline is Visual Studio 2019.7; successful local tests do not imply Autodesk certification for this toolchain combination. [Autodesk Maya 2022 devkit notes](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/What-s-New-What-s-Changed-/2022-Whats-New-in-API.html)
+The original 2022, 2025 and 2026 binaries were built with Visual Studio 2022 / MSVC 19.44 and are retained unchanged. Maya 2022's documented baseline is Visual Studio 2019.7; historical local tests do not imply Autodesk certification for this toolchain combination. [Autodesk Maya 2022 devkit notes](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/What-s-New-What-s-Changed-/2022-Whats-New-in-API.html)
+
+The new 2023 and 2024 binaries use the same unchanged C++ source, linked separately against each official base-release DevKit. Both completed Release x64 builds with Visual Studio 2022 / MSVC 19.44.35229.0 and Windows SDK 10.0.26100.0. Autodesk specifies [Visual Studio 2019 for Maya 2023](https://help.autodesk.com/cloudhelp/2023/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html) and [Visual Studio 2022 for Maya 2024](https://help.autodesk.com/cloudhelp/2024/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html). The 2023 build therefore differs from the specified environment. Both remain candidates awaiting host validation; successful compilation is not an Autodesk compatibility guarantee.
 
 `tests/integration_maya.py` must run in a new target-version `mayapy` process. Provide `--plugin`, `--scripts`, `--output` and `--profile`; the profile must be a dedicated child of the output directory. Set `BRAIDTOOLS_ISOLATED_TEST=1` and `MAYA_APP_DIR` to that profile. `tests/module_qt_smoke.py` adds module-discovery and offscreen UI checks. Do not execute these tests in an existing interactive Maya session. Sanitize local paths in raw reports before publishing them.
 

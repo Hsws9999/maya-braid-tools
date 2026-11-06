@@ -1,6 +1,6 @@
 """BraidTools for Maya. Importing this package never edits a scene."""
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 from .api import (  # noqa: F401
     bake, create, create_from_selection, delete_assets, extract_guides,

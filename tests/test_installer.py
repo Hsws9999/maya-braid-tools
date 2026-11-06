@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Filesystem-only acceptance tests for the BraidTools Windows installer.
+"""Filesystem and mocked-confirmation tests for the BraidTools Windows installer.
 
 Run with ordinary system Python, never mayapy:
-    python work/BraidTools-Installable/tests/test_installer.py -v
+    python work/BraidTools-AllMaya/tests/test_installer.py -v
 
 All installs use disposable directories beside this package under work/.
 No Maya session, user profile, registry, shelf, or real modules folder is used.
-The fixtures copy the package's real three-version binaries without loading them.
+The fixtures copy the package's real five-version binaries without loading them.
 """
 import hashlib
 import importlib.util
@@ -31,7 +31,8 @@ EXPECTED_SOURCE_FILES = (
     'scripts/braidtools/__init__.py', 'scripts/braidtools/_qt.py',
     'scripts/braidtools/api.py', 'scripts/braidtools/lifecycle.py',
     'scripts/braidtools/ui.py',
-    'plug-ins/2022/braidTools.mll', 'plug-ins/2025/braidTools.mll',
+    'plug-ins/2022/braidTools.mll', 'plug-ins/2023/braidTools.mll',
+    'plug-ins/2024/braidTools.mll', 'plug-ins/2025/braidTools.mll',
     'plug-ins/2026/braidTools.mll',
 )
 
@@ -120,7 +121,7 @@ class InstallerAcceptanceTests(unittest.TestCase):
             records[relative] = {'sha256': hashlib.sha256(data).hexdigest(), 'size': len(data)}
         write_manifest(destination, {
             'schema': 1, 'identity': 'BraidTools.runtime.v1', 'package': 'BraidTools',
-            'version': '1.0.2', 'platform': 'win64', 'maya_versions': [2022, 2025, 2026],
+            'version': '1.0.3', 'platform': 'win64', 'maya_versions': [2022, 2023, 2024, 2025, 2026],
             'files': records,
         })
         # Extracted packages can contain user notes and development files;
@@ -159,10 +160,32 @@ class InstallerAcceptanceTests(unittest.TestCase):
         result = self.install()
         self.assert_complete_install(self.source, self.target, result)
         self.assertEqual(tree_state(self.source), source_before)
-        for year in (2022, 2025, 2026):
+        for year in (2022, 2023, 2024, 2025, 2026):
             binary = self.target / 'BraidTools' / 'plug-ins' / str(year) / 'braidTools.mll'
             self.assertEqual(binary.read_bytes()[:2], b'MZ')
             self.assertLess(binary.stat().st_size, 300 * 1024)
+
+    def test_supported_versions_reach_confirmation_with_preview_notice_only_where_needed(self):
+        for year in (2022, 2023, 2024, 2025, 2026):
+            with self.subTest(year=year):
+                cmds = mock.Mock()
+                cmds.about.return_value = year * 10000
+                cmds.internalVar.return_value = str(self.root / 'disposable-user-app')
+                cmds.confirmDialog.return_value = '取消'
+                utils = mock.Mock()
+                maya_stub = mock.Mock(cmds=cmds, utils=utils)
+                with mock.patch.dict(sys.modules, {'maya': maya_stub}):
+                    self.assertIsNone(self.installer.install_in_maya(str(self.source)))
+                cmds.confirmDialog.assert_called_once()
+                message = cmds.confirmDialog.call_args[1]['message']
+                if year in (2023, 2024):
+                    self.assertIn('Maya %s 为兼容预览' % year, message)
+                    self.assertIn('尚未完成对应 Maya 的运行验证', message)
+                else:
+                    self.assertNotIn('兼容预览', message)
+                    self.assertNotIn('尚未完成', message)
+                utils.executeDeferred.assert_not_called()
+                self.assertFalse((self.root / 'disposable-user-app').exists())
 
     def test_identical_reinstall_is_noop_including_modification_times(self):
         self.install()

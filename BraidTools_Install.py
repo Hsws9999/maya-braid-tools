@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Offline, non-overwriting installer for Windows Maya 2022 / 2025 / 2026.
+"""Offline, non-overwriting installer for Windows Maya 2022 through 2026.
 
 Drag this file from the fully extracted package into Maya. Importing it is
 read-only. install_package(sourceRoot, targetRoot) is the Maya-independent
@@ -18,7 +18,7 @@ import sys
 import tempfile
 
 
-SUPPORTED_MAYA = (2022, 2025, 2026)
+SUPPORTED_MAYA = (2022, 2023, 2024, 2025, 2026)
 PACKAGE_NAME = "BraidTools"
 DESCRIPTOR_NAME = "BraidTools.mod"
 MANIFEST_NAME = "BraidTools.runtime.json"
@@ -30,7 +30,8 @@ RUNTIME_FILES = (
     "scripts/braidtools/__init__.py", "scripts/braidtools/_qt.py",
     "scripts/braidtools/api.py", "scripts/braidtools/lifecycle.py",
     "scripts/braidtools/ui.py",
-    "plug-ins/2022/braidTools.mll", "plug-ins/2025/braidTools.mll",
+    "plug-ins/2022/braidTools.mll", "plug-ins/2023/braidTools.mll",
+    "plug-ins/2024/braidTools.mll", "plug-ins/2025/braidTools.mll",
     "plug-ins/2026/braidTools.mll",
 )
 SOURCE_FILES = (DESCRIPTOR_NAME,) + RUNTIME_FILES
@@ -111,13 +112,13 @@ def runtime_manifest(sourceRoot):
     source = _absolute(sourceRoot)
     return {
         "schema": 1, "identity": MANIFEST_IDENTITY, "package": PACKAGE_NAME,
-        "version": "1.0.2", "platform": "win64", "maya_versions": list(SUPPORTED_MAYA),
+        "version": "1.0.3", "platform": "win64", "maya_versions": list(SUPPORTED_MAYA),
         "files": {name: _digest(_regular_file(source, name)) for name in SOURCE_FILES},
     }
 
 
 def validate_source(sourceRoot):
-    """Check the entire three-version runtime before creating target files."""
+    """Check the entire five-version runtime before creating target files."""
     source = _absolute(sourceRoot)
     manifest_path = _regular_file(source, MANIFEST_NAME)
     with open(manifest_path, "rb") as stream:
@@ -355,15 +356,18 @@ def install_in_maya(sourceRoot=None):
     """Interactive entry: the user approves the exact disk and shelf changes."""
     from maya import cmds, utils
     if sys.platform != "win32" or sys.version_info < (3, 7):
-        raise InstallError("需要 Windows Maya 的 Python 3 模式；支持 Maya 2022、2025、2026。")
+        raise InstallError("需要 Windows Maya 的 Python 3 模式；支持 Maya 2022 至 2026。")
     major = int(cmds.about(apiVersion=True)) // 10000
     if major not in SUPPORTED_MAYA:
-        raise InstallError("此安装包只支持 Windows Maya 2022、2025、2026；当前为 Maya %s。" % major)
+        raise InstallError("此安装包只支持 Windows Maya 2022 至 2026；当前为 Maya %s。" % major)
     source = _absolute(sourceRoot or os.path.dirname(__file__))
     target = os.path.join(cmds.internalVar(userAppDir=True), "modules")
     validate_source(source)
     message = ("将运行文件复制到：\n%s\n\n安装后打开工具，并新增专属 BraidTools 工具架按钮。"
-               "同名不同内容会停止安装。需要重启时会明确提示。\n\n是否安装？" % os.path.join(target, PACKAGE_NAME))
+               "同名不同内容会停止安装。需要重启时会明确提示。" % os.path.join(target, PACKAGE_NAME))
+    if major in (2023, 2024):
+        message += "\n\nMaya %s 为兼容预览，尚未完成对应 Maya 的运行验证。" % major
+    message += "\n\n是否安装？"
     choice = cmds.confirmDialog(title="安装 BraidTools", message=message, button=["安装", "取消"],
                                 defaultButton="安装", cancelButton="取消", dismissString="取消")
     if choice != "安装":

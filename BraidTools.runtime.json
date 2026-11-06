@@ -13,8 +13,8 @@
       "size": 1086
     },
     "NOTICE.txt": {
-      "sha256": "173b62483aa7fa371ff7b61ea070dd2a051c95cbdd4efc0c1733be2784bf7f11",
-      "size": 5155
+      "sha256": "d6e51af50def729bf4a5a33ce5b7285ee4ea7db9846abd4e716532a3477f5fa1",
+      "size": 5873
     },
     "icons/braidTools.png": {
       "sha256": "2e50e7eec554110b13cccf7114d43683f4b753eea30a4fc40719589a06eae63a",
@@ -32,6 +32,14 @@
       "sha256": "1bcf5cbfa7da72c51aa97ffc04eac2de35330818961cef11826fc060be43a4c3",
       "size": 89600
     },
+    "plug-ins/2023/braidTools.mll": {
+      "sha256": "612740df7083c03d20aa927c5d0e8ca131b9c662b44723721b1b823a4b367c08",
+      "size": 89600
+    },
+    "plug-ins/2024/braidTools.mll": {
+      "sha256": "5885debaf8928e3672f57a270790b6bbc5e95a1a76d44b84de13d7810d77620a",
+      "size": 89600
+    },
     "plug-ins/2025/braidTools.mll": {
       "sha256": "956022cbb277c45f96677b581bf91edb6f990a1df30f3e70f6ffbc702f4159b1",
       "size": 89600
@@ -41,7 +49,7 @@
       "size": 89088
     },
     "scripts/braidtools/__init__.py": {
-      "sha256": "482701fdc68df1ee0e2f2b0b423b492733b1c8ecd170c92dab13a221d5d3b42e",
+      "sha256": "d84a7cb17f031b3c9355cd554ee66bd60f8a76dc033eaef56fc0f1c944dc185e",
       "size": 426
     },
     "scripts/braidtools/_qt.py": {
@@ -64,11 +72,13 @@
   "identity": "BraidTools.runtime.v1",
   "maya_versions": [
     2022,
+    2023,
+    2024,
     2025,
     2026
   ],
   "package": "BraidTools",
   "platform": "win64",
   "schema": 1,
-  "version": "1.0.2"
+  "version": "1.0.3"
 }

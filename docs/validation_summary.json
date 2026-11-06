@@ -811,5 +811,50 @@
     "scope": "Isolated mayapy API and offscreen Qt tests; native binaries unchanged.",
     "nativeBinariesUnchanged": true,
     "failureBoundary": "Whole-batch preflight and one native delete command; arbitrary Maya internal failures are not a transaction guarantee."
-  }
+  },
+  "maya_2023_2024_build_preview": {
+    "date": "2026-11-06",
+    "package_version": "1.0.3",
+    "compiler": "Visual Studio 2022 / MSVC 19.44.35229.0",
+    "windows_sdk": "10.0.26100.0",
+    "configuration": "Release x64",
+    "installer_tests": {
+      "passed": 19,
+      "failed": 0
+    },
+    "runtime_tests_performed_for_new_versions": false,
+    "new_versions": {
+      "2023": {
+        "build": "passed",
+        "sdk_api_version": 20230000,
+        "exported_api_version": 20230000,
+        "machine": "x64",
+        "runtime": "not tested; corresponding Maya host is not installed",
+        "sha256": "612740df7083c03d20aa927c5d0e8ca131b9c662b44723721b1b823a4b367c08",
+        "bytes": 89600,
+        "sdk_source": "https://autodesk-adn-transfer.s3.us-west-2.amazonaws.com/ADN+Extranet/M%26E/Maya/devkit+2023/Autodesk_Maya_2023_DEVKIT_Windows.zip"
+      },
+      "2024": {
+        "build": "passed",
+        "sdk_api_version": 20240000,
+        "exported_api_version": 20240000,
+        "machine": "x64",
+        "runtime": "not tested; corresponding Maya host is not installed",
+        "sha256": "5885debaf8928e3672f57a270790b6bbc5e95a1a76d44b84de13d7810d77620a",
+        "bytes": 89600,
+        "sdk_source": "https://autodesk-adn-transfer.s3.us-west-2.amazonaws.com/ADN+Extranet/M%26E/Maya/devkit+2024/Autodesk_Maya_2024_DEVKIT_Windows.zip"
+      }
+    },
+    "existing_binaries_and_native_source_unchanged": true,
+    "maya_2023_toolchain_note": "Autodesk lists VS2019 for Maya 2023; this VS2022 build is an unverified compatibility preview, not an Autodesk-supported toolchain claim.",
+    "included_maya_versions": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "python_3_9_and_3_10_syntax_check": "passed; not a host or binding runtime test"
+  },
+  "historical_sections_scope": "Earlier versions, sourceSha256, installer and deletionUpdate entries are historical records; the 1.0.3 build/install update is recorded separately under maya_2023_2024_build_preview."
 }
