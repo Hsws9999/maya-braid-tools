@@ -1,0 +1,70 @@
+cmake_minimum_required(VERSION 3.21)
+project(BraidTools VERSION 1.0.0 LANGUAGES CXX)
+
+if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This build target supports Windows x64.")
+endif()
+
+set(MAYA_VERSION "2026" CACHE STRING "Maya major version; use a separate build directory for each version")
+set_property(CACHE MAYA_VERSION PROPERTY STRINGS 2022 2023 2024 2025 2026)
+if(NOT MAYA_VERSION MATCHES "^[0-9][0-9][0-9][0-9]$")
+    message(FATAL_ERROR "MAYA_VERSION must be a four-digit Maya major version, such as 2026.")
+endif()
+set(MAYA_LOCATION "C:/Program Files/Autodesk/Maya${MAYA_VERSION}" CACHE PATH "Maya installation or SDK containing include and lib")
+if(NOT EXISTS "${MAYA_LOCATION}/include/maya/MPxNode.h")
+    message(FATAL_ERROR "MAYA_LOCATION must point to the Maya ${MAYA_VERSION} installation or SDK.")
+endif()
+file(STRINGS "${MAYA_LOCATION}/include/maya/MTypes.h" MAYA_APP_VERSION_DEFINITION
+    REGEX "^#define[ \t]+MAYA_APP_VERSION[ \t]+[0-9]+")
+string(REGEX MATCH "MAYA_APP_VERSION[ \t]+([0-9]+)" MAYA_APP_VERSION_MATCH "${MAYA_APP_VERSION_DEFINITION}")
+if(NOT CMAKE_MATCH_1 STREQUAL MAYA_VERSION)
+    message(FATAL_ERROR "MAYA_VERSION=${MAYA_VERSION} does not match the SDK at MAYA_LOCATION. Use a fresh build directory or set MAYA_LOCATION explicitly.")
+endif()
+foreach(MAYA_LIBRARY Foundation OpenMaya)
+    if(NOT EXISTS "${MAYA_LOCATION}/lib/${MAYA_LIBRARY}.lib")
+        message(FATAL_ERROR "Missing Maya SDK library: ${MAYA_LOCATION}/lib/${MAYA_LIBRARY}.lib")
+    endif()
+endforeach()
+
+set(BRAIDTOOLS_NODE_ID "0x0007B7A1" CACHE STRING "Maya node type ID; the default is for local development only")
+option(BRAIDTOOLS_PUBLIC_RELEASE "Build a binary intended for public distribution" OFF)
+option(BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED "Confirm that BRAIDTOOLS_NODE_ID is registered to this project and may be distributed" OFF)
+if(NOT BRAIDTOOLS_NODE_ID MATCHES "^(0[xX][0-9A-Fa-f]+|[0-9]+)$")
+    message(FATAL_ERROR "BRAIDTOOLS_NODE_ID must be an unsigned decimal or hexadecimal integer.")
+endif()
+math(EXPR BRAIDTOOLS_NODE_ID_VALUE "${BRAIDTOOLS_NODE_ID}")
+if(BRAIDTOOLS_NODE_ID_VALUE LESS 1 OR BRAIDTOOLS_NODE_ID_VALUE GREATER 4294967295)
+    message(FATAL_ERROR "BRAIDTOOLS_NODE_ID must fit a nonzero unsigned 32-bit Maya type ID.")
+endif()
+math(EXPR BRAIDTOOLS_DEVELOPMENT_NODE_ID "0x0007B7A1")
+if(BRAIDTOOLS_PUBLIC_RELEASE)
+    if(NOT BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED)
+        message(FATAL_ERROR "Public releases require an assigned Maya node ID and explicit BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON. Registration is not verified by this build system.")
+    endif()
+    if(BRAIDTOOLS_NODE_ID_VALUE EQUAL BRAIDTOOLS_DEVELOPMENT_NODE_ID)
+        message(FATAL_ERROR "The default development node ID 0x0007B7A1 cannot be used for a public release. Supply the project's registered BRAIDTOOLS_NODE_ID.")
+    endif()
+endif()
+
+add_library(braidTools SHARED src/BraidTools.cpp)
+target_compile_features(braidTools PRIVATE cxx_std_17)
+target_include_directories(braidTools PRIVATE "${MAYA_LOCATION}/include")
+target_link_directories(braidTools PRIVATE "${MAYA_LOCATION}/lib")
+target_link_libraries(braidTools PRIVATE Foundation OpenMaya)
+target_compile_definitions(braidTools PRIVATE NT_PLUGIN REQUIRE_IOSTREAM _CRT_SECURE_NO_WARNINGS NOMINMAX
+    BRAIDTOOLS_NODE_ID=${BRAIDTOOLS_NODE_ID}
+    BRAIDTOOLS_PUBLIC_RELEASE=$<BOOL:${BRAIDTOOLS_PUBLIC_RELEASE}>
+    BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=$<BOOL:${BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED}>)
+if(MSVC)
+    target_compile_options(braidTools PRIVATE /W4 /EHsc /utf-8)
+    target_link_options(braidTools PRIVATE /export:initializePlugin /export:uninitializePlugin)
+endif()
+set(BRAIDTOOLS_PLUGIN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/plug-ins/${MAYA_VERSION}")
+set_target_properties(braidTools PROPERTIES PREFIX "" SUFFIX ".mll"
+    RUNTIME_OUTPUT_DIRECTORY "${BRAIDTOOLS_PLUGIN_OUTPUT_DIRECTORY}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BRAIDTOOLS_PLUGIN_OUTPUT_DIRECTORY}"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BRAIDTOOLS_PLUGIN_OUTPUT_DIRECTORY}/Debug"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BRAIDTOOLS_PLUGIN_OUTPUT_DIRECTORY}/RelWithDebInfo"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BRAIDTOOLS_PLUGIN_OUTPUT_DIRECTORY}/MinSizeRel")
+install(TARGETS braidTools RUNTIME DESTINATION "plug-ins/${MAYA_VERSION}")
+message(STATUS "BraidTools: Maya ${MAYA_VERSION}, Windows x64, node ID ${BRAIDTOOLS_NODE_ID}, public release ${BRAIDTOOLS_PUBLIC_RELEASE}")

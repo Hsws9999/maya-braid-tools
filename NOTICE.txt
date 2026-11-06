@@ -1,0 +1,45 @@
+BraidTools — 开发预览 / Development preview
+
+许可证与署名 / License and attribution
+Copyright (c) 2026 Hsws9999
+本项目源码采用 MIT 许可证，完整条款见 LICENSE。
+Source is licensed under the MIT License; see LICENSE for the complete terms.
+
+依赖 / Dependencies
+BraidTools 使用 Autodesk Maya API、C++/Python 标准库，以及用户 Maya 安装中自带的 PySide2 或 PySide6。
+本项目不打包 Autodesk Maya、Maya SDK 头文件与开发库、Qt/PySide 安装包或第三方付费工具。
+这些产品与依赖仍适用各自条款。用户需要自己的 Maya 安装及相应使用许可。
+BraidTools uses the Maya API, standard libraries, and the PySide binding bundled with the user's Maya installation.
+Maya, SDK headers/libraries, and Qt/PySide packages are not redistributed here.
+Dependencies retain their own terms; users need their own Maya installation and applicable license.
+
+平台 / Platform
+仅面向 Windows x64。Maya 2022 仅支持 Python 3 模式。
+各 Maya 主版本需要分别编译的 plug-ins/<year>/braidTools.mll。
+Windows x64 only. Maya 2022 requires Python 3. Each Maya major version needs a separate binary.
+
+节点 ID 与分发 / Node ID and distribution
+节点名：braidToolsGenerator
+默认开发 ID：0x0007B7A1
+当前默认 ID 仅用于本地开发，尚不能作为已注册的公开分发 ID。
+公开分发二进制前，应取得属于本项目的 Autodesk 注册节点 ID，并重新编译和验证。
+CMake 公开构建要求 BRAIDTOOLS_PUBLIC_RELEASE=ON、实际获分配的 BRAIDTOOLS_NODE_ID，
+以及维护者核实注册归属后设置 BRAIDTOOLS_REGISTERED_NODE_ID_CONFIRMED=ON。
+该确认开关不会联网检查注册。不能随意改一个数字并称其为注册 ID。
+The default node ID is for local development. Obtain an Autodesk ID assigned to this project before public binary distribution.
+Public builds require the release flag, the assigned ID, and explicit registration confirmation.
+The build system does not verify registration online.
+
+节点 ID 是场景兼容性的一部分。更换后必须验证现有场景迁移与保存重开，保留原开发版本供迁移前使用。
+Node IDs affect scene compatibility. Verify migration and save/reopen behavior before replacing an existing development installation.
+
+Autodesk 官方说明 / Official guidance:
+https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/Maya-Python-API/Dependency-Graph-Plug-in-Basics/Dependency-Graph-Plug-ins.html
+https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/cpp_ref/class_m_type_id.html
+
+数据依赖 / Scene dependencies
+包含生成节点的可编辑场景需要匹配插件。独立提取的源导向和烘焙网格无需本插件。
+Editable generator scenes require the matching plugin. Detached guide curves and baked meshes do not.
+
+本地安装说明描述手动操作及其影响；准备此项目不会自动安装模块、更改用户设置或执行外部发布。
+Installation instructions describe manual actions. Preparing this project does not install modules, change user settings, or publish anything externally.

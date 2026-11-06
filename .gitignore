@@ -1,0 +1,50 @@
+# Python bytecode can contain local source paths.
+__pycache__/
+*.py[cod]
+
+# Per-version native build products; distribute approved binaries via Releases.
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+*.mll
+*.dll
+*.lib
+*.exp
+*.obj
+*.o
+*.pdb
+*.ilk
+*.idb
+*.tlog
+*.VC.db
+*.VC.opendb
+.vs/
+
+# Local runs, Maya profiles, reports and logs may contain private paths.
+/work/
+/validation/
+/test-results/
+/profiles/
+/profile/
+*.log
+*.dmp
+*.tmp
+*.bak
+*.swp
+
+# Local configuration and private credentials.
+.env
+.env.*
+!.env.example
+
+# Release archives are generated after release checks.
+*.zip
+*.7z
+*.tar.gz
+
+# OS metadata.
+Thumbs.db
+Desktop.ini
+.DS_Store

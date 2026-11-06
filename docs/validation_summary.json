@@ -1,0 +1,295 @@
+{
+  "packageStatus": "local development / publication preparation",
+  "publicBinaryRelease": false,
+  "versions": {
+    "2022": {
+      "integrationStatus": "passed",
+      "cases": [
+        {
+          "name": "create_multi_and_repeat",
+          "status": "passed"
+        },
+        {
+          "name": "create_undo_redo",
+          "status": "passed"
+        },
+        {
+          "name": "continuous_cv_batch_and_undo",
+          "status": "passed"
+        },
+        {
+          "name": "density_modes_and_length",
+          "status": "passed"
+        },
+        {
+          "name": "localized_size_and_rotation_ramps",
+          "status": "passed"
+        },
+        {
+          "name": "batch_ramp_scope_and_undo",
+          "status": "passed"
+        },
+        {
+          "name": "mesh_resolution_independent_guides",
+          "status": "passed"
+        },
+        {
+          "name": "names_parenting_nonuniform_scale",
+          "status": "passed"
+        },
+        {
+          "name": "initial_frame_continuity",
+          "status": "passed"
+        },
+        {
+          "name": "native_rebuild_history_on",
+          "status": "passed"
+        },
+        {
+          "name": "native_rebuild_history_off",
+          "status": "passed"
+        },
+        {
+          "name": "tool_rebuild_and_rebind",
+          "status": "passed"
+        },
+        {
+          "name": "static_guides_root_disks_and_bake",
+          "status": "passed"
+        },
+        {
+          "name": "save_reopen_without_ui",
+          "status": "passed"
+        },
+        {
+          "name": "invalid_and_missing_inputs",
+          "status": "passed"
+        },
+        {
+          "name": "resolution_limits_and_recovery",
+          "status": "passed"
+        },
+        {
+          "name": "degenerate_root_extraction_is_atomic",
+          "status": "passed"
+        },
+        {
+          "name": "twenty_asset_performance",
+          "status": "passed"
+        }
+      ],
+      "qtModule": {
+        "status": "passed",
+        "mayaVersion": "2022",
+        "apiVersion": 20220000,
+        "python": "3.7.7",
+        "qt": "5.15.2",
+        "topLevelModuleDiscovered": true,
+        "perVersionPluginLoaded": true,
+        "panelConstructed": true,
+        "panelParameterUndo": true,
+        "offscreenRampPaintAndMouse": true,
+        "dialogExec": true,
+        "scope": "Offscreen widgets; no docking or viewport test."
+      },
+      "pluginSha256": "1bcf5cbfa7da72c51aa97ffc04eac2de35330818961cef11826fc060be43a4c3"
+    },
+    "2025": {
+      "integrationStatus": "passed",
+      "cases": [
+        {
+          "name": "create_multi_and_repeat",
+          "status": "passed"
+        },
+        {
+          "name": "create_undo_redo",
+          "status": "passed"
+        },
+        {
+          "name": "continuous_cv_batch_and_undo",
+          "status": "passed"
+        },
+        {
+          "name": "density_modes_and_length",
+          "status": "passed"
+        },
+        {
+          "name": "localized_size_and_rotation_ramps",
+          "status": "passed"
+        },
+        {
+          "name": "batch_ramp_scope_and_undo",
+          "status": "passed"
+        },
+        {
+          "name": "mesh_resolution_independent_guides",
+          "status": "passed"
+        },
+        {
+          "name": "names_parenting_nonuniform_scale",
+          "status": "passed"
+        },
+        {
+          "name": "initial_frame_continuity",
+          "status": "passed"
+        },
+        {
+          "name": "native_rebuild_history_on",
+          "status": "passed"
+        },
+        {
+          "name": "native_rebuild_history_off",
+          "status": "passed"
+        },
+        {
+          "name": "tool_rebuild_and_rebind",
+          "status": "passed"
+        },
+        {
+          "name": "static_guides_root_disks_and_bake",
+          "status": "passed"
+        },
+        {
+          "name": "save_reopen_without_ui",
+          "status": "passed"
+        },
+        {
+          "name": "invalid_and_missing_inputs",
+          "status": "passed"
+        },
+        {
+          "name": "resolution_limits_and_recovery",
+          "status": "passed"
+        },
+        {
+          "name": "degenerate_root_extraction_is_atomic",
+          "status": "passed"
+        },
+        {
+          "name": "twenty_asset_performance",
+          "status": "passed"
+        }
+      ],
+      "qtModule": {
+        "status": "passed",
+        "mayaVersion": "2025",
+        "apiVersion": 20250000,
+        "python": "3.11.4",
+        "qt": "6.5.3",
+        "topLevelModuleDiscovered": true,
+        "perVersionPluginLoaded": true,
+        "panelConstructed": true,
+        "panelParameterUndo": true,
+        "offscreenRampPaintAndMouse": true,
+        "dialogExec": true,
+        "scope": "Offscreen widgets; no docking or viewport test."
+      },
+      "pluginSha256": "956022cbb277c45f96677b581bf91edb6f990a1df30f3e70f6ffbc702f4159b1"
+    },
+    "2026": {
+      "integrationStatus": "passed",
+      "cases": [
+        {
+          "name": "create_multi_and_repeat",
+          "status": "passed"
+        },
+        {
+          "name": "create_undo_redo",
+          "status": "passed"
+        },
+        {
+          "name": "continuous_cv_batch_and_undo",
+          "status": "passed"
+        },
+        {
+          "name": "density_modes_and_length",
+          "status": "passed"
+        },
+        {
+          "name": "localized_size_and_rotation_ramps",
+          "status": "passed"
+        },
+        {
+          "name": "batch_ramp_scope_and_undo",
+          "status": "passed"
+        },
+        {
+          "name": "mesh_resolution_independent_guides",
+          "status": "passed"
+        },
+        {
+          "name": "names_parenting_nonuniform_scale",
+          "status": "passed"
+        },
+        {
+          "name": "initial_frame_continuity",
+          "status": "passed"
+        },
+        {
+          "name": "native_rebuild_history_on",
+          "status": "passed"
+        },
+        {
+          "name": "native_rebuild_history_off",
+          "status": "passed"
+        },
+        {
+          "name": "tool_rebuild_and_rebind",
+          "status": "passed"
+        },
+        {
+          "name": "static_guides_root_disks_and_bake",
+          "status": "passed"
+        },
+        {
+          "name": "save_reopen_without_ui",
+          "status": "passed"
+        },
+        {
+          "name": "invalid_and_missing_inputs",
+          "status": "passed"
+        },
+        {
+          "name": "resolution_limits_and_recovery",
+          "status": "passed"
+        },
+        {
+          "name": "degenerate_root_extraction_is_atomic",
+          "status": "passed"
+        },
+        {
+          "name": "twenty_asset_performance",
+          "status": "passed"
+        }
+      ],
+      "qtModule": {
+        "status": "passed",
+        "mayaVersion": "2026",
+        "apiVersion": 20260300,
+        "python": "3.11.9",
+        "qt": "6.5.3",
+        "topLevelModuleDiscovered": true,
+        "perVersionPluginLoaded": true,
+        "panelConstructed": true,
+        "panelParameterUndo": true,
+        "offscreenRampPaintAndMouse": true,
+        "dialogExec": true,
+        "scope": "Offscreen widgets; no docking or viewport test."
+      },
+      "pluginSha256": "6b35b9ffce84775c2bcde41087b550c6be8a6b6637c80992e905e464bd0ffa37"
+    }
+  },
+  "sourceSha256": {
+    "src/BraidTools.cpp": "afdfc3d8419d24d50f2665739d6f5f229f06630917d153fee143a45bb2f838ba",
+    "CMakeLists.txt": "f4d20548fd0c792714924e6156af53119e7adc97bf3b636b5aa0a4c234576525",
+    "BraidTools.mod": "3a9e3430700f3a99d4f7c35c7f0ba5099a628c0ab6f9ce8e0e87116d3ceccdbd",
+    "BraidTools_Open.py": "a14771b9b9ce15191124e977df2af7b919274b85d81f715477e793214d6953b3",
+    "scripts/braidtools/api.py": "34bd2a2c22a1af4a26c7986bef7eda61bb027b1462efad9f60e6051f3e363cda",
+    "scripts/braidtools/lifecycle.py": "a98f0ce5cda8adb47be77fae7c8cc94467479d152c3537d156563dd0fcde1387",
+    "scripts/braidtools/ui.py": "26bbf3d018b175d0493b0b3956fb5dffe35e78e45e51427ff368439c9f1fa8ad",
+    "scripts/braidtools/_qt.py": "f0b8e90d06a25f98cc2c6a6ff675dee89390f5fbe7df2efaf278af082474c230",
+    "scripts/braidtools/__init__.py": "fa122c617bd83b12dba3e479ea57b437d45d3c9fcbc08f24276ba2ac125a31ac",
+    "tests/integration_maya.py": "87286777071d5735341305330f7bdf17cfaa0abc5b93cdf4d20f2b632cc10a9e",
+    "tests/module_qt_smoke.py": "a46a6ddb0aa986675b6504c15bc7b20f426893dfa391f815549b9cded57d6aa4"
+  }
+}
