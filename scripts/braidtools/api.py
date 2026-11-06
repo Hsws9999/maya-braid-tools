@@ -293,6 +293,174 @@ def create(curves):
     return _unique(result)
 
 
+def _delete_name(obj):
+    """Resolve an object identity without passing a DAG short name to cmds."""
+    if obj.hasFn(om.MFn.kDagNode):
+        paths = om.MDagPath.getAllPathsTo(obj)
+        if len(paths) != 1:
+            raise ValueError("删除已取消：连接对象包含实例或无有效路径，不能确定独占归属。")
+        return paths[0].fullPathName()
+    return om.MFnDependencyNode(obj).name()
+
+
+def _delete_check_editable(node):
+    """Check every planned node before the first destructive command."""
+    if cmds.referenceQuery(node, isNodeReferenced=True):
+        raise ValueError("删除已取消：资产包含引用节点，请先处理引用：%s" % node)
+    if any(cmds.lockNode(node, query=True, lock=True) or []) or cmds.listAttr(node, locked=True):
+        raise ValueError("删除已取消：资产节点或属性已锁定：%s" % node)
+    selection = om.MSelectionList()
+    selection.add(node)
+    obj = selection.getDependNode(0)
+    if obj.hasFn(om.MFn.kDagNode) and len(om.MDagPath.getAllPathsTo(obj)) != 1:
+        raise ValueError("删除已取消：资产包含实例，不能确定独占归属：%s" % node)
+
+
+def _delete_connections(node, outgoing=True):
+    selection = om.MSelectionList()
+    selection.add(node)
+    fn = om.MFnDependencyNode(selection.getDependNode(0))
+    result = []
+    for plug in fn.getConnections():
+        for other in plug.connectedTo(not outgoing, outgoing):
+            result.append((plug, other))
+    return result
+
+
+def _delete_root(node):
+    """Use either surviving message link, never a name or guessed ancestor."""
+    linked = [_delete_name(plug.node()) for plug in _plug(node, "assetRoot").connectedTo(True, False)]
+    back_links = []
+    for plug, other in _delete_connections(node):
+        if om.MFnAttribute(plug.attribute()).name != "message":
+            continue
+        if om.MFnAttribute(other.attribute()).name != "braidToolsGenerator":
+            raise ValueError("删除已取消：生成器有额外对象连接，归属不明确：%s" % node)
+        other_node = _delete_name(other.node())
+        if cmds.nodeType(other_node) != "transform":
+            raise ValueError("删除已取消：资产根连接不是 transform：%s" % node)
+        back_links.append(other_node)
+    roots = _unique(linked + back_links)
+    if len(roots) > 1:
+        raise ValueError("删除已取消：生成器关联了多个资产根，归属不明确：%s" % node)
+    if not roots:
+        return None
+    root = roots[0]
+    if cmds.nodeType(root) != "transform":
+        raise ValueError("删除已取消：资产根不是 transform：%s" % root)
+    marker_owners = []
+    if cmds.attributeQuery("braidToolsGenerator", node=root, exists=True):
+        marker_owners = [_delete_name(plug.node()) for plug in _plug(root, "braidToolsGenerator").connectedTo(True, False)]
+    root_owners = []
+    for plug, other in _delete_connections(root):
+        if (om.MFnAttribute(plug.attribute()).name == "message"
+                and om.MFnAttribute(other.attribute()).name == "assetRoot"):
+            root_owners.append(_delete_name(other.node()))
+    owners = _unique(marker_owners + root_owners)
+    if any(owner != node for owner in owners):
+        raise ValueError("删除已取消：资产根被其他生成器共用：%s" % root)
+    return root
+
+
+def _delete_cleanup_transform(transform, allowed_nodes, is_root=False):
+    """Only empty-after-delete transforms without attached user data qualify."""
+    attributes = cmds.listAttr(transform, userDefined=True) or []
+    permitted = {"braidToolsGenerator"} if is_root else set()
+    if set(attributes) - permitted:
+        return False
+    for outgoing in (True, False):
+        for plug, other in _delete_connections(transform, outgoing=outgoing):
+            other_node = _delete_name(other.node())
+            if other_node not in allowed_nodes:
+                return False
+    return True
+
+
+def delete_assets(nodes):
+    """Delete exactly the supplied generators and their unambiguous live meshes.
+
+    Returns the deleted generator names. Source curves, independent snapshots,
+    other generators and foreign children are preserved. A damaged asset can
+    lose either/both root links; when ownership evidence is missing, empty
+    transforms are kept. Locks, references, instances, shared outputs and
+    unexpected downstream dependencies reject the whole batch before editing.
+    """
+    nodes = _generators(nodes)
+    if not nodes:
+        return []
+    if not cmds.undoInfo(query=True, state=True):
+        raise ValueError("删除已取消：Maya 撤销当前未启用。请先启用撤销，再删除资产。")
+    generators = set(nodes)
+    meshes = set()
+    cleanup = set()
+    roots = set()
+    protected_sources = {_delete_name(plug.node()) for node in nodes
+                         for plug in _plug(node, "sourceCurve").connectedTo(True, False)}
+    for node in nodes:
+        _delete_check_editable(node)
+        root = _delete_root(node)
+        if root:
+            _delete_check_editable(root)
+            roots.add(root)
+        by_output = {}
+        for plug, other in _delete_connections(node):
+            attribute = om.MFnAttribute(plug.attribute()).name
+            if attribute == "message":
+                continue  # Already checked by _delete_root.
+            if attribute != "outMesh" or not plug.isElement or plug.logicalIndex() not in (0, 1, 2):
+                raise ValueError("删除已取消：生成器有额外下游连接，请先断开或烘焙：%s" % plug.name())
+            other_node = _delete_name(other.node())
+            if cmds.nodeType(other_node) != "mesh" or om.MFnAttribute(other.attribute()).name != "inMesh":
+                raise ValueError("删除已取消：网格输出含额外历史或不明确对象：%s" % other.name())
+            index = plug.logicalIndex()
+            if index in by_output and by_output[index] != other_node:
+                raise ValueError("删除已取消：同一股输出被多个网格共用：%s" % plug.name())
+            by_output[index] = other_node
+        for mesh in by_output.values():
+            _delete_check_editable(mesh)
+            if root and not mesh.startswith(root + "|"):
+                raise ValueError("删除已取消：输出网格已移到资产根之外，归属需确认：%s" % mesh)
+            for plug, other in _delete_connections(mesh):
+                if om.MFnAttribute(plug.attribute()).name in {"outMesh", "worldMesh", "outSmoothMesh"}:
+                    raise ValueError("删除已取消：生成网格仍被外部几何使用：%s" % other.name())
+            # A locked parent can prevent DAG edits even when it is preserved.
+            parent = (cmds.listRelatives(mesh, parent=True, fullPath=True) or [None])[0]
+            if parent:
+                _delete_check_editable(parent)
+                if root and (cmds.listRelatives(parent, parent=True, fullPath=True) or []) == [root]:
+                    cleanup.add(parent)
+            meshes.add(mesh)
+    planned = generators | meshes
+    # Clean only immediate strand transforms proved by an output connection.
+    # Arbitrary inserted groups and unidentifiable empty children stay intact.
+    for transform in sorted(cleanup, key=lambda value: value.count("|"), reverse=True):
+        children = set(cmds.listRelatives(transform, children=True, fullPath=True) or [])
+        if (transform not in protected_sources and children <= planned
+                and _delete_cleanup_transform(transform, planned)):
+            planned.add(transform)
+    for root in roots:
+        children = set(cmds.listRelatives(root, children=True, fullPath=True) or [])
+        if (root not in protected_sources and children <= planned
+                and _delete_cleanup_transform(root, planned, is_root=True)):
+            planned.add(root)
+    for node in planned:
+        _delete_check_editable(node)
+        # A locked connection on a preserved endpoint can block disconnection.
+        for outgoing in (True, False):
+            for plug, other in _delete_connections(node, outgoing=outgoing):
+                if other.isLocked:
+                    raise ValueError("删除已取消：相连属性已锁定：%s" % other.name())
+    # One native delete command, without inputConnectionsAndNodes or history
+    # deletion. A parent is included only if every child is also in this plan.
+    targets = [node for node in planned
+               if not any(node.startswith(parent + "|") for parent in planned if parent.startswith("|"))]
+    with undo_chunk("BraidTools 删除资产"):
+        cmds.delete(targets)
+    from . import lifecycle
+    lifecycle.refresh_registry()
+    return nodes
+
+
 def _numeric_value(name, value):
     if isinstance(value, bool):
         raise ValueError("参数需要数值: %s" % name)

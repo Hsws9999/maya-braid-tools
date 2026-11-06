@@ -110,7 +110,7 @@ def runtime_manifest(sourceRoot):
     source = _absolute(sourceRoot)
     return {
         "schema": 1, "identity": MANIFEST_IDENTITY, "package": PACKAGE_NAME,
-        "version": "1.0.0", "platform": "win64", "maya_versions": list(SUPPORTED_MAYA),
+        "version": "1.0.1", "platform": "win64", "maya_versions": list(SUPPORTED_MAYA),
         "files": {name: _digest(_regular_file(source, name)) for name in SOURCE_FILES},
     }
 

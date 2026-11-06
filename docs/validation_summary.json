@@ -283,16 +283,18 @@
     "CMakeLists.txt": "f4d20548fd0c792714924e6156af53119e7adc97bf3b636b5aa0a4c234576525",
     "BraidTools.mod": "3a9e3430700f3a99d4f7c35c7f0ba5099a628c0ab6f9ce8e0e87116d3ceccdbd",
     "BraidTools_Open.py": "a14771b9b9ce15191124e977df2af7b919274b85d81f715477e793214d6953b3",
-    "scripts/braidtools/api.py": "34bd2a2c22a1af4a26c7986bef7eda61bb027b1462efad9f60e6051f3e363cda",
+    "scripts/braidtools/api.py": "751aaeb7d7eaa40dbab2725784c4cad9aa39baaead37065ae546377136e8a3d1",
     "scripts/braidtools/lifecycle.py": "a98f0ce5cda8adb47be77fae7c8cc94467479d152c3537d156563dd0fcde1387",
-    "scripts/braidtools/ui.py": "26bbf3d018b175d0493b0b3956fb5dffe35e78e45e51427ff368439c9f1fa8ad",
+    "scripts/braidtools/ui.py": "b10773238e30df3b267bf8086da61f49d27d3e0b198671362a54a432386777c2",
     "scripts/braidtools/_qt.py": "f0b8e90d06a25f98cc2c6a6ff675dee89390f5fbe7df2efaf278af082474c230",
-    "scripts/braidtools/__init__.py": "fa122c617bd83b12dba3e479ea57b437d45d3c9fcbc08f24276ba2ac125a31ac",
+    "scripts/braidtools/__init__.py": "12b07e9e9dd5633f8b627537a62d1adee323d2e15bcb0e6a08c56a7cb11e6722",
     "tests/integration_maya.py": "87286777071d5735341305330f7bdf17cfaa0abc5b93cdf4d20f2b632cc10a9e",
     "tests/module_qt_smoke.py": "a46a6ddb0aa986675b6504c15bc7b20f426893dfa391f815549b9cded57d6aa4",
-    "BraidTools_Install.py": "0db75f1cadafafef8434d192fdce81bba3c49df2b15188cb684c2cdf92f14e17",
-    "BraidTools.runtime.json": "0cfa0ffe292a6dcf6d9d872d173241370a432c625a0a9f7d1a41c2caa6da9325",
-    "tests/test_installer.py": "3808e31f093cd1379e3fbcb07ea16edc0d0d836be5bf433707468881b3f5c5b3"
+    "BraidTools_Install.py": "792965897d68ffe3f1ffb29e462b1a32acdd9290431d418fc552b3548c6a89f8",
+    "BraidTools.runtime.json": "17bdb581ec4aca524a6829319b9f7a8419c0a62ece428823a6ee541420944b83",
+    "tests/test_installer.py": "3808e31f093cd1379e3fbcb07ea16edc0d0d836be5bf433707468881b3f5c5b3",
+    "tests/delete_maya.py": "5557dbbb577b34c260ed89d15e17d2705b1ecb602fdad6730fb0580b737e63c1",
+    "tests/delete_ui_maya.py": "765aab5f4a49d02b9ea849cf7bb4327443cbdafe57374e218597d662e69bbbee"
   },
   "installer": {
     "coreTestsPassed": 18,
@@ -314,5 +316,500 @@
       "cached_drop_source",
       "unknown_drop_source"
     ]
+  },
+  "deletionUpdate": {
+    "version": "1.0.1",
+    "date": "2026-11-06",
+    "versions": {
+      "2022": {
+        "integration": [
+          {
+            "name": "create_multi_and_repeat",
+            "status": "passed"
+          },
+          {
+            "name": "create_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "continuous_cv_batch_and_undo",
+            "status": "passed"
+          },
+          {
+            "name": "density_modes_and_length",
+            "status": "passed"
+          },
+          {
+            "name": "localized_size_and_rotation_ramps",
+            "status": "passed"
+          },
+          {
+            "name": "batch_ramp_scope_and_undo",
+            "status": "passed"
+          },
+          {
+            "name": "mesh_resolution_independent_guides",
+            "status": "passed"
+          },
+          {
+            "name": "names_parenting_nonuniform_scale",
+            "status": "passed"
+          },
+          {
+            "name": "initial_frame_continuity",
+            "status": "passed"
+          },
+          {
+            "name": "native_rebuild_history_on",
+            "status": "passed"
+          },
+          {
+            "name": "native_rebuild_history_off",
+            "status": "passed"
+          },
+          {
+            "name": "tool_rebuild_and_rebind",
+            "status": "passed"
+          },
+          {
+            "name": "static_guides_root_disks_and_bake",
+            "status": "passed"
+          },
+          {
+            "name": "save_reopen_without_ui",
+            "status": "passed"
+          },
+          {
+            "name": "invalid_and_missing_inputs",
+            "status": "passed"
+          },
+          {
+            "name": "resolution_limits_and_recovery",
+            "status": "passed"
+          },
+          {
+            "name": "degenerate_root_extraction_is_atomic",
+            "status": "passed"
+          },
+          {
+            "name": "twenty_asset_performance",
+            "status": "passed"
+          }
+        ],
+        "deleteAPI": [
+          {
+            "name": "single_snapshots_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "multi_explicit_targets",
+            "status": "passed"
+          },
+          {
+            "name": "shared_source",
+            "status": "passed"
+          },
+          {
+            "name": "missing_source_and_root",
+            "status": "passed"
+          },
+          {
+            "name": "root_link_and_partial_mesh",
+            "status": "passed"
+          },
+          {
+            "name": "no_root_links_preserves_unknown_parents",
+            "status": "passed"
+          },
+          {
+            "name": "foreign_children_and_custom_transform",
+            "status": "passed"
+          },
+          {
+            "name": "inserted_and_external_ancestors",
+            "status": "passed"
+          },
+          {
+            "name": "locked_batch",
+            "status": "passed"
+          },
+          {
+            "name": "instances_and_shared_outputs",
+            "status": "passed"
+          },
+          {
+            "name": "reference_batch",
+            "status": "passed"
+          },
+          {
+            "name": "invalid_selection_and_undo_disabled",
+            "status": "passed"
+          }
+        ],
+        "deleteUI": [
+          {
+            "name": "no_selection_and_cancel",
+            "status": "passed"
+          },
+          {
+            "name": "single_shared_source_and_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "multiple_targets_one_undo",
+            "status": "passed"
+          },
+          {
+            "name": "rename_while_confirming",
+            "status": "passed"
+          },
+          {
+            "name": "locked_batch_refusal",
+            "status": "passed"
+          },
+          {
+            "name": "deleted_target_cannot_match_replacement",
+            "status": "passed"
+          },
+          {
+            "name": "stale_row_cannot_match_replacement",
+            "status": "passed"
+          },
+          {
+            "name": "reverse_root_link_changed_during_confirmation",
+            "status": "passed"
+          }
+        ],
+        "apiTeardown": "passed",
+        "qt": "5.15.2"
+      },
+      "2025": {
+        "integration": [
+          {
+            "name": "create_multi_and_repeat",
+            "status": "passed"
+          },
+          {
+            "name": "create_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "continuous_cv_batch_and_undo",
+            "status": "passed"
+          },
+          {
+            "name": "density_modes_and_length",
+            "status": "passed"
+          },
+          {
+            "name": "localized_size_and_rotation_ramps",
+            "status": "passed"
+          },
+          {
+            "name": "batch_ramp_scope_and_undo",
+            "status": "passed"
+          },
+          {
+            "name": "mesh_resolution_independent_guides",
+            "status": "passed"
+          },
+          {
+            "name": "names_parenting_nonuniform_scale",
+            "status": "passed"
+          },
+          {
+            "name": "initial_frame_continuity",
+            "status": "passed"
+          },
+          {
+            "name": "native_rebuild_history_on",
+            "status": "passed"
+          },
+          {
+            "name": "native_rebuild_history_off",
+            "status": "passed"
+          },
+          {
+            "name": "tool_rebuild_and_rebind",
+            "status": "passed"
+          },
+          {
+            "name": "static_guides_root_disks_and_bake",
+            "status": "passed"
+          },
+          {
+            "name": "save_reopen_without_ui",
+            "status": "passed"
+          },
+          {
+            "name": "invalid_and_missing_inputs",
+            "status": "passed"
+          },
+          {
+            "name": "resolution_limits_and_recovery",
+            "status": "passed"
+          },
+          {
+            "name": "degenerate_root_extraction_is_atomic",
+            "status": "passed"
+          },
+          {
+            "name": "twenty_asset_performance",
+            "status": "passed"
+          }
+        ],
+        "deleteAPI": [
+          {
+            "name": "single_snapshots_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "multi_explicit_targets",
+            "status": "passed"
+          },
+          {
+            "name": "shared_source",
+            "status": "passed"
+          },
+          {
+            "name": "missing_source_and_root",
+            "status": "passed"
+          },
+          {
+            "name": "root_link_and_partial_mesh",
+            "status": "passed"
+          },
+          {
+            "name": "no_root_links_preserves_unknown_parents",
+            "status": "passed"
+          },
+          {
+            "name": "foreign_children_and_custom_transform",
+            "status": "passed"
+          },
+          {
+            "name": "inserted_and_external_ancestors",
+            "status": "passed"
+          },
+          {
+            "name": "locked_batch",
+            "status": "passed"
+          },
+          {
+            "name": "instances_and_shared_outputs",
+            "status": "passed"
+          },
+          {
+            "name": "reference_batch",
+            "status": "passed"
+          },
+          {
+            "name": "invalid_selection_and_undo_disabled",
+            "status": "passed"
+          }
+        ],
+        "deleteUI": [
+          {
+            "name": "no_selection_and_cancel",
+            "status": "passed"
+          },
+          {
+            "name": "single_shared_source_and_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "multiple_targets_one_undo",
+            "status": "passed"
+          },
+          {
+            "name": "rename_while_confirming",
+            "status": "passed"
+          },
+          {
+            "name": "locked_batch_refusal",
+            "status": "passed"
+          },
+          {
+            "name": "deleted_target_cannot_match_replacement",
+            "status": "passed"
+          },
+          {
+            "name": "stale_row_cannot_match_replacement",
+            "status": "passed"
+          },
+          {
+            "name": "reverse_root_link_changed_during_confirmation",
+            "status": "passed"
+          }
+        ],
+        "apiTeardown": "passed",
+        "qt": "6.5.3"
+      },
+      "2026": {
+        "integration": [
+          {
+            "name": "create_multi_and_repeat",
+            "status": "passed"
+          },
+          {
+            "name": "create_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "continuous_cv_batch_and_undo",
+            "status": "passed"
+          },
+          {
+            "name": "density_modes_and_length",
+            "status": "passed"
+          },
+          {
+            "name": "localized_size_and_rotation_ramps",
+            "status": "passed"
+          },
+          {
+            "name": "batch_ramp_scope_and_undo",
+            "status": "passed"
+          },
+          {
+            "name": "mesh_resolution_independent_guides",
+            "status": "passed"
+          },
+          {
+            "name": "names_parenting_nonuniform_scale",
+            "status": "passed"
+          },
+          {
+            "name": "initial_frame_continuity",
+            "status": "passed"
+          },
+          {
+            "name": "native_rebuild_history_on",
+            "status": "passed"
+          },
+          {
+            "name": "native_rebuild_history_off",
+            "status": "passed"
+          },
+          {
+            "name": "tool_rebuild_and_rebind",
+            "status": "passed"
+          },
+          {
+            "name": "static_guides_root_disks_and_bake",
+            "status": "passed"
+          },
+          {
+            "name": "save_reopen_without_ui",
+            "status": "passed"
+          },
+          {
+            "name": "invalid_and_missing_inputs",
+            "status": "passed"
+          },
+          {
+            "name": "resolution_limits_and_recovery",
+            "status": "passed"
+          },
+          {
+            "name": "degenerate_root_extraction_is_atomic",
+            "status": "passed"
+          },
+          {
+            "name": "twenty_asset_performance",
+            "status": "passed"
+          }
+        ],
+        "deleteAPI": [
+          {
+            "name": "single_snapshots_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "multi_explicit_targets",
+            "status": "passed"
+          },
+          {
+            "name": "shared_source",
+            "status": "passed"
+          },
+          {
+            "name": "missing_source_and_root",
+            "status": "passed"
+          },
+          {
+            "name": "root_link_and_partial_mesh",
+            "status": "passed"
+          },
+          {
+            "name": "no_root_links_preserves_unknown_parents",
+            "status": "passed"
+          },
+          {
+            "name": "foreign_children_and_custom_transform",
+            "status": "passed"
+          },
+          {
+            "name": "inserted_and_external_ancestors",
+            "status": "passed"
+          },
+          {
+            "name": "locked_batch",
+            "status": "passed"
+          },
+          {
+            "name": "instances_and_shared_outputs",
+            "status": "passed"
+          },
+          {
+            "name": "reference_batch",
+            "status": "passed"
+          },
+          {
+            "name": "invalid_selection_and_undo_disabled",
+            "status": "passed"
+          }
+        ],
+        "deleteUI": [
+          {
+            "name": "no_selection_and_cancel",
+            "status": "passed"
+          },
+          {
+            "name": "single_shared_source_and_undo_redo",
+            "status": "passed"
+          },
+          {
+            "name": "multiple_targets_one_undo",
+            "status": "passed"
+          },
+          {
+            "name": "rename_while_confirming",
+            "status": "passed"
+          },
+          {
+            "name": "locked_batch_refusal",
+            "status": "passed"
+          },
+          {
+            "name": "deleted_target_cannot_match_replacement",
+            "status": "passed"
+          },
+          {
+            "name": "stale_row_cannot_match_replacement",
+            "status": "passed"
+          },
+          {
+            "name": "reverse_root_link_changed_during_confirmation",
+            "status": "passed"
+          }
+        ],
+        "apiTeardown": "passed",
+        "qt": "6.5.3"
+      }
+    },
+    "scope": "Isolated mayapy API and offscreen Qt tests; native binaries unchanged.",
+    "nativeBinariesUnchanged": true,
+    "failureBoundary": "Whole-batch preflight and one native delete command; arbitrary Maya internal failures are not a transaction guarantee."
   }
 }

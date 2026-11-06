@@ -1,5 +1,13 @@
 # 变更记录 / Changelog
 
+## 1.0.1 — 删除所选辫子
+
+- 在列表旁新增“删除所选辫子…”；支持多选，确认窗口固定目标身份并列出名称，默认取消。
+- 删除所选实时生成器及其生成网格，保留源曲线、未选中资产、导向/根面/烘焙快照和额外子对象；支持一次撤销与重做。
+- 预检锁定、引用、实例与归属，Maya 撤销关闭时停止删除；不自动解除用户保护。
+- 本次更新 Python API 与面板，沿用 1.0.0 的三个已验证 C++ 二进制，不更改节点 ID 或场景参数格式。
+- English: add confirmed deletion for list-selected live braids, with source/snapshot preservation and one-step undo/redo. Native binaries and scene schema are unchanged.
+
 ## 1.0.0 — 学习预览安装包
 
 项目采用 MIT 许可证，Copyright (c) 2026 Hsws9999。

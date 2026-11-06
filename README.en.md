@@ -8,7 +8,7 @@ Download the ZIP above → extract the complete folder → drag `BraidTools_Inst
 
 BraidTools generates editable three-strand braids along open NURBS curves in Windows Maya. It provides a Chinese dockable panel, standalone guide curves for subsequent XGen setup, and baked meshes.
 
-**Status: learning preview.** The complete package includes locally compiled Windows Maya 2022, 2025 and 2026 plugins. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
+**Status: 1.0.1 learning preview.** The complete package includes locally compiled Windows Maya 2022, 2025 and 2026 plugins. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
 
 ## Compatibility and verification
 
@@ -35,13 +35,14 @@ The panel uses Maya's bundled PySide2 or PySide6; do not install a separate Qt b
 - Size and local rotation ramps; batch edits affect only the selected parameter.
 - Automatic or manual longitudinal resolution, separate cross-section resolution, rebuild and explicit rebind.
 - 27 standalone guide curves per braid, optional root disks, and independent baked meshes.
-- Undo support for creation, edits, rebuild, rebind, guide extraction and baking.
+- Confirmed deletion of one or multiple list-selected live braids, preserving source curves and independent snapshots; one-step undo and redo.
+- Undo support for creation, deletion, edits, rebuild, rebind, guide extraction and baking.
 
 Closed paths, other strand counts, collision solving, automatic XGen Descriptions, hair materials and UE Groom export are outside this version's scope. Extracted curves are source curves for later XGen conversion.
 
 <img src="docs/images/panel.png" alt="BraidTools Chinese parameter panel" width="420">
 
-This image illustrates the panel layout, not completed GUI verification on every Maya version.
+This image shows the 1.0.0 layout; 1.0.1 adds a delete-selected-braids button below the asset list. It does not represent completed GUI verification on every Maya version.
 
 ## Drag-and-drop installation
 

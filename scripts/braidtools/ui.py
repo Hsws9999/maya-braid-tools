@@ -347,6 +347,7 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self._callbacks = []
         self._disposed = False
         self._rebind_active = False
+        self._delete_active = False
         self._refresh_timer = QtCore.QTimer(self)
         self._refresh_timer.setSingleShot(True)
         self._refresh_timer.timeout.connect(self.refresh)
@@ -384,6 +385,12 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.assets.setToolTip("这里选中的资产是下方编辑目标。Ctrl/Shift 多选。")
         self.assets.itemSelectionChanged.connect(self._asset_selection)
         outer.addWidget(self.assets)
+        self.delete_button = QtWidgets.QPushButton("删除所选辫子…")
+        self.delete_button.setObjectName("BraidToolsDeleteSelected")
+        self.delete_button.setToolTip("删除列表中选中的实时辫子资产；保留源曲线和独立快照。与 Ramp 的删除点无关。")
+        self.delete_button.setEnabled(False)
+        self.delete_button.clicked.connect(self._delete_selected)
+        outer.addWidget(self.delete_button)
         self.target_label = QtWidgets.QLabel()
         outer.addWidget(self.target_label)
         scroll = QtWidgets.QScrollArea()
@@ -596,6 +603,110 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         if sources:
             cmds.select(sources, replace=True)
 
+    def _delete_selected(self):
+        """Confirm and delete only the asset identities selected in this list."""
+        if self._disposed or self._delete_active or self._rebind_active:
+            return
+        self._end_edit()
+        self._refresh_timer.stop()
+        self._delete_active = True
+        self.delete_button.setEnabled(False)
+        dialog = None
+        message = None
+        error = None
+        try:
+            items = self.assets.selectedItems()
+            if not items:
+                raise ValueError("请先在上方列表中选择要删除的辫子。")
+            targets = []
+            for item in items:
+                handle = item.data(int(QtCore.Qt.ItemDataRole.UserRole) + 1)
+                if (not isinstance(handle, om.MObjectHandle)
+                        or not handle.isValid() or not handle.isAlive()
+                        or om.MFnDependencyNode(handle.object()).typeName != api.NODE_TYPE):
+                    raise ValueError("列表中的资产已不存在，请刷新后重新选择。")
+                node = om.MFnDependencyNode(handle.object()).name()
+                root = api._delete_root(node)
+                root_handle = om.MObjectHandle(api._dag_path(root).node()) if root else None
+                targets.append((handle, root_handle, root or node))
+
+            dialog = QtWidgets.QDialog(self)
+            dialog.setObjectName("BraidToolsDeleteDialog")
+            dialog.setWindowTitle("删除所选辫子")
+            dialog.resize(540, 300)
+            layout = QtWidgets.QVBoxLayout(dialog)
+            label = QtWidgets.QLabel("将删除以下 %d 条实时辫子资产：" % len(targets))
+            layout.addWidget(label)
+            names = QtWidgets.QListWidget()
+            names.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+            for unused_handle, unused_root_handle, name in targets:
+                names.addItem(name)
+            layout.addWidget(names, 1)
+            explanation = QtWidgets.QLabel(
+                "保留源曲线，以及已经提取的导向线、根部面和烘焙网格。\n"
+                "只删除上述列表目标；共享同一源曲线的其他辫子保持不变。\n"
+                "删除后可按 Ctrl+Z 撤销。")
+            explanation.setWordWrap(True)
+            layout.addWidget(explanation)
+            buttons = QtWidgets.QDialogButtonBox()
+            confirm = buttons.addButton("删除 %d 条辫子" % len(targets),
+                                        QtWidgets.QDialogButtonBox.ButtonRole.DestructiveRole)
+            confirm.setObjectName("BraidToolsDeleteConfirm")
+            confirm.setDefault(False)
+            confirm.setAutoDefault(False)
+            cancel = buttons.addButton("取消", QtWidgets.QDialogButtonBox.ButtonRole.RejectRole)
+            cancel.setObjectName("BraidToolsDeleteCancel")
+            cancel.setAutoDefault(True)
+            cancel.setDefault(True)
+            cancel.setFocus()
+            confirm.clicked.connect(dialog.accept)
+            buttons.rejected.connect(dialog.reject)
+            layout.addWidget(buttons)
+            if dialog_exec(dialog) != QtWidgets.QDialog.DialogCode.Accepted:
+                return
+
+            nodes = []
+            for handle, root_handle, unused_name in targets:
+                if not (handle.isValid() and handle.isAlive()):
+                    raise ValueError("待删除资产已发生变化，请刷新列表后重新确认。")
+                fn = om.MFnDependencyNode(handle.object())
+                if fn.typeName != api.NODE_TYPE:
+                    raise ValueError("待删除资产类型已发生变化，未执行删除。")
+                node = fn.name()
+                root = api._delete_root(node)
+                if root_handle is None:
+                    if root:
+                        raise ValueError("待删除资产组已发生变化，请重新确认。")
+                elif (not root_handle.isValid() or not root_handle.isAlive() or not root
+                      or api._dag_path(root).node() != root_handle.object()):
+                    raise ValueError("待删除资产组已发生变化，请重新确认。")
+                nodes.append(node)
+            deleted = api.delete_assets(nodes)
+            if not deleted:
+                raise ValueError("没有可删除的辫子资产，请刷新列表后重新选择。")
+            self._nodes = []
+            self.assets.clearSelection()
+            message = "已删除 %d 条辫子；源曲线和独立快照已保留。Ctrl+Z 可撤销。" % len(deleted)
+        except (RuntimeError, ValueError) as exc:
+            error = exc
+        finally:
+            self._delete_active = False
+            if dialog is not None:
+                dialog.deleteLater()
+            # Deletion and rollback can emit selection/undo events. Reconcile
+            # once without deriving targets from a possibly shared source curve.
+            self._refresh_timer.stop()
+            try:
+                self.refresh(preserve_targets=True)
+            except (RuntimeError, ValueError) as exc:
+                if error is None:
+                    error = exc
+            if not self._disposed:
+                if error is not None:
+                    self._error(error)
+                elif message is not None:
+                    self.status.setText(message)
+
     def _rebind(self):
         self._end_edit()
         try:
@@ -660,14 +771,14 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             self._error(exc)
 
     def _asset_selection(self):
-        if self._syncing or self._disposed or self._rebind_active:
+        if self._syncing or self._disposed or self._rebind_active or self._delete_active:
             return
         self._end_edit()
         self._nodes = [item.data(QtCore.Qt.ItemDataRole.UserRole) for item in self.assets.selectedItems()]
         self._load_values()
 
     def _selection_changed(self, *unused):
-        if self._syncing or self._disposed or self._rebind_active:
+        if self._syncing or self._disposed or self._rebind_active or self._delete_active:
             return
         targets = api.generators_from_selection()
         if targets:
@@ -676,11 +787,11 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             self.refresh()
 
     def _defer_refresh(self, *unused):
-        if not self._disposed and not self._rebind_active:
+        if not self._disposed and not self._rebind_active and not self._delete_active:
             self._refresh_timer.start(0)
 
     def refresh(self, *unused, preserve_targets=False):
-        if self._syncing or self._disposed or self._rebind_active:
+        if self._syncing or self._disposed or self._rebind_active or self._delete_active:
             return
         self._syncing = True
         try:
@@ -695,6 +806,8 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 label += "  →  " + (root.rsplit("|", 1)[-1] if root else "资产组缺失")
                 item = QtWidgets.QListWidgetItem(label)
                 item.setData(QtCore.Qt.ItemDataRole.UserRole, node)
+                item.setData(int(QtCore.Qt.ItemDataRole.UserRole) + 1,
+                             om.MObjectHandle(api._plug(node, "message").node()))
                 item.setToolTip(node)
                 self.assets.addItem(item)
                 item.setSelected(node in self._nodes)
@@ -704,6 +817,8 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def _load_values(self):
         self.controls.setEnabled(bool(self._nodes))
+        self.delete_button.setEnabled(bool(self.assets.selectedItems())
+                                      and not self._delete_active and not self._rebind_active)
         self.target_label.setText("编辑目标：%d 条%s" % (len(self._nodes), " · 显示首条数值；仅修改正在编辑的字段" if len(self._nodes) > 1 else ""))
         if not self._nodes:
             self.status.setText("未选择 BraidTools 资产。选择源曲线后可点击创建。")

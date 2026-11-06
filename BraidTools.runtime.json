@@ -29,24 +29,24 @@
       "size": 89088
     },
     "scripts/braidtools/__init__.py": {
-      "sha256": "fa122c617bd83b12dba3e479ea57b437d45d3c9fcbc08f24276ba2ac125a31ac",
-      "size": 411
+      "sha256": "12b07e9e9dd5633f8b627537a62d1adee323d2e15bcb0e6a08c56a7cb11e6722",
+      "size": 426
     },
     "scripts/braidtools/_qt.py": {
       "sha256": "f0b8e90d06a25f98cc2c6a6ff675dee89390f5fbe7df2efaf278af082474c230",
       "size": 1042
     },
     "scripts/braidtools/api.py": {
-      "sha256": "34bd2a2c22a1af4a26c7986bef7eda61bb027b1462efad9f60e6051f3e363cda",
-      "size": 27988
+      "sha256": "751aaeb7d7eaa40dbab2725784c4cad9aa39baaead37065ae546377136e8a3d1",
+      "size": 36710
     },
     "scripts/braidtools/lifecycle.py": {
       "sha256": "a98f0ce5cda8adb47be77fae7c8cc94467479d152c3537d156563dd0fcde1387",
       "size": 5012
     },
     "scripts/braidtools/ui.py": {
-      "sha256": "26bbf3d018b175d0493b0b3956fb5dffe35e78e45e51427ff368439c9f1fa8ad",
-      "size": 35065
+      "sha256": "b10773238e30df3b267bf8086da61f49d27d3e0b198671362a54a432386777c2",
+      "size": 41369
     }
   },
   "identity": "BraidTools.runtime.v1",
@@ -58,5 +58,5 @@
   "package": "BraidTools",
   "platform": "win64",
   "schema": 1,
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
