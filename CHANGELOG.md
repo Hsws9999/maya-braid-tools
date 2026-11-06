@@ -25,7 +25,7 @@
 - 增加 `BraidTools_Install.py` 拖放安装入口及 `BraidTools.runtime.json` 校验清单；确认目标和 Shelf 影响后，使用 Maya 用户目录安装模块。首次正常安装打开面板，并添加 BraidTools 工具架上的 Braid 按钮。
 - 安装无需管理员权限，不修改 `Maya.env`、`userSetup.py` 或系统环境变量。相同完整安装可重复运行；不同、不完整或非本安装器管理的目标拒绝覆盖，不自动升级或卸载。已载其他包时完成磁盘安装并提示重启后再拖入一次，不覆盖同名用户 Shelf。
 - README 顶部提供完整包下载入口，并区分安装 ZIP 与 GitHub Code → Download ZIP 源码快照。
-- 源码中的编译产物继续忽略；仓库允许跟踪 `downloads/BraidTools_Windows_Maya2022_2025_2026_Learning.zip`。
+- 源码中的编译产物继续忽略；仓库允许跟踪 `downloads/BraidTools1.0.zip`。
 
 ### 功能
 

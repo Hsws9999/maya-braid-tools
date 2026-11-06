@@ -2,7 +2,7 @@
 
 [English](README.en.md) · [使用说明](docs/使用说明.md) · [变更记录](CHANGELOG.md) · [验证记录](docs/验证记录.md)
 
-**[下载完整学习预览安装包：Windows Maya 2022／2025／2026](https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools_Windows_Maya2022_2025_2026_Learning.zip)**
+**[下载完整学习预览安装包：Windows Maya 2022／2025／2026](https://github.com/Hsws9999/maya-braid-tools/raw/refs/heads/main/downloads/BraidTools1.0.zip)**
 
 下载上方 ZIP → 解压整个文件夹 → 在 Maya 中把 `BraidTools_Install.py` 拖入视口。安装包已包含三个年份的 `.mll`，无需自行编译。请使用此完整包；GitHub 的 **Code → Download ZIP** 是仓库源码快照，不是这份可直接安装的插件包。
 

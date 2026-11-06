@@ -43,7 +43,7 @@ CMakeCache.txt
 *.zip
 *.7z
 *.tar.gz
-!/downloads/BraidTools_Windows_Maya2022_2025_2026_Learning.zip
+!/downloads/BraidTools1.0.zip
 
 # OS metadata.
 Thumbs.db
