@@ -129,10 +129,17 @@ std::vector<Frame> transportFrames(const std::vector<MPoint>& points,
     }
     return result;
 }
+struct ControlPair {
+    MObject edited, rest;
+    double start=0.0, end=1.0;
+    bool changed=false;
+};
 struct Settings {
     double length=0, cycles=0, size=1, flatness=1, thickness=1, strandFlatness=1;
     double orientation=0, phase=0, quality=1;
-    int segments=256, radialSides=12, guideSamples=0;
+    int segments=256, radialSides=12, guideSamples=0, controlSamples=32;
+    bool controlsEnabled=false;
+    std::array<ControlPair,3> controls;
     MMatrix parentInverse;
     MVector referenceT = MVector(0, 1, 0), referenceN = MVector(1, 0, 0);
 };
@@ -151,17 +158,20 @@ public:
     static MObject densityMode, pitch, cycles, size, flatness, strandThickness, strandFlatness;
     static MObject orientation, phase, sizeRamp, rotationRamp;
     static MObject longitudinalMode, lengthSegments, radialSides, autoQuality, guideSamples;
-    static MObject outMesh, outGuideCurves, outLength, outCycles, outSegments, outStatus;
+    static MObject strandControlSamples, strandControlsEnabled, strandControlCurves, strandRestCurves;
+    static MObject outMesh, outGuideCurves, outControlCurves, outLength, outCycles, outSegments, outStatus;
     static void* creator() { return new BraidGenerator; }
     static MStatus initialize();
     void postConstructor() override;
     MStatus compute(const MPlug&, MDataBlock&) override;
     SchedulingType schedulingType() const override { return kGloballySerial; }
 private:
-    Settings readSettings(MDataBlock&, MFnNurbsCurve&);
-    std::array<Strand,3> sample(MFnNurbsCurve&, const Settings&, int count);
+    Settings readSettings(MDataBlock&, MFnNurbsCurve&, bool readControls=true);
+    void readControls(MDataBlock&, Settings&);
+    std::array<Strand,3> sample(MFnNurbsCurve&, const Settings&, int count, bool controlCage=false);
     MObject makeMesh(const Strand&, const Settings&);
     MObject makeGuide(const Strand&, const Settings&, int guide);
+    MObject makeControl(const Strand&, const Settings&);
     void clearGeometry(MDataBlock&, const MObject&);
 };
 
@@ -174,7 +184,8 @@ ATTR(frameReferenceTangent) ATTR(frameReferenceNormal) ATTR(sourceWorldMatrix)
 ATTR(densityMode) ATTR(pitch) ATTR(cycles) ATTR(size) ATTR(flatness) ATTR(strandThickness) ATTR(strandFlatness)
 ATTR(orientation) ATTR(phase) ATTR(sizeRamp) ATTR(rotationRamp)
 ATTR(longitudinalMode) ATTR(lengthSegments) ATTR(radialSides) ATTR(autoQuality) ATTR(guideSamples)
-ATTR(outMesh) ATTR(outGuideCurves) ATTR(outLength) ATTR(outCycles) ATTR(outSegments) ATTR(outStatus)
+ATTR(strandControlSamples) ATTR(strandControlsEnabled) ATTR(strandControlCurves) ATTR(strandRestCurves)
+ATTR(outMesh) ATTR(outGuideCurves) ATTR(outControlCurves) ATTR(outLength) ATTR(outCycles) ATTR(outSegments) ATTR(outStatus)
 #undef ATTR
 
 MStatus BraidGenerator::initialize() {
@@ -223,12 +234,24 @@ MStatus BraidGenerator::initialize() {
     integer(radialSides, "radialSides", "rs", 12, 3, 64);
     scalar(autoQuality, "autoQuality", "aq", 1.0, 0.1, 8.0);
     integer(guideSamples, "guideSamples", "gs", 0, 0, kMaxSegments+1);
+    integer(strandControlSamples, "strandControlSamples", "scs", 32, 4, 256);
+    strandControlsEnabled = number.create("strandControlsEnabled", "sce", MFnNumericData::kBoolean, false);
+    number.setKeyable(false); addInput(strandControlsEnabled);
+    for (auto item : {std::make_pair(&strandControlCurves, "strandControlCurves"),
+                      std::make_pair(&strandRestCurves, "strandRestCurves")}) {
+        *item.first = typed.create(item.second, item.first == &strandControlCurves ? "scc" : "src", MFnData::kNurbsCurve);
+        typed.setArray(true); typed.setStorable(false); typed.setDisconnectBehavior(MFnAttribute::kReset);
+        addInput(*item.first);
+    }
     outMesh = typed.create("outMesh", "om", MFnData::kMesh);
     typed.setArray(true); typed.setUsesArrayDataBuilder(true); typed.setStorable(false); typed.setWritable(false);
     outputs.push_back(outMesh); addAttribute(outMesh);
     outGuideCurves = typed.create("outGuideCurves", "ogc", MFnData::kNurbsCurve);
     typed.setArray(true); typed.setUsesArrayDataBuilder(true); typed.setStorable(false); typed.setWritable(false);
     outputs.push_back(outGuideCurves); addAttribute(outGuideCurves);
+    outControlCurves = typed.create("outControlCurves", "occ", MFnData::kNurbsCurve);
+    typed.setArray(true); typed.setUsesArrayDataBuilder(true); typed.setStorable(false); typed.setWritable(false);
+    outputs.push_back(outControlCurves); addAttribute(outControlCurves);
     for (auto item : {std::make_pair(&outLength, "outLength"), std::make_pair(&outCycles, "outCycles")}) {
         *item.first = number.create(item.second, item.first == &outLength ? "ol" : "oc", MFnNumericData::kDouble, 0.0);
         number.setStorable(false); number.setWritable(false); outputs.push_back(*item.first); addAttribute(*item.first);
@@ -238,7 +261,11 @@ MStatus BraidGenerator::initialize() {
     MFnStringData strings;
     outStatus = typed.create("outStatus", "ost", MFnData::kString, strings.create("Input curve is not connected"));
     typed.setStorable(false); typed.setWritable(false); outputs.push_back(outStatus); addAttribute(outStatus);
-    for (const auto& in : inputs) for (const auto& out : outputs) { st = attributeAffects(in, out); if (!st) return st; }
+    for (const auto& in : inputs) for (const auto& out : outputs) {
+        // Baseline control cages never depend on the downstream editing stage.
+        if (out == outControlCurves && (in == strandControlsEnabled || in == strandControlCurves || in == strandRestCurves)) continue;
+        st = attributeAffects(in, out); if (!st) return st;
+    }
     return MS::kSuccess;
 }
 
@@ -253,7 +280,7 @@ void BraidGenerator::postConstructor() {
     MRampAttribute(thisMObject(), rotationRamp).setRamp(rotations, positions, interpolations);
 }
 
-Settings BraidGenerator::readSettings(MDataBlock& block, MFnNurbsCurve& curve) {
+Settings BraidGenerator::readSettings(MDataBlock& block, MFnNurbsCurve& curve, bool controlsRequested) {
     if (curve.form() != MFnNurbsCurve::kOpen) throw std::runtime_error("Input must be an open NURBS curve");
     Settings s;
     s.length = curve.length(1.0e-6);
@@ -284,6 +311,7 @@ Settings BraidGenerator::readSettings(MDataBlock& block, MFnNurbsCurve& curve) {
     if (!std::isfinite(determinant) || std::abs(determinant) < 1.0e-15)
         throw std::runtime_error("Asset parent scale is singular or too extreme; restore a usable scale");
     s.radialSides = std::clamp(block.inputValue(radialSides).asInt(), 3, 64);
+    s.controlSamples = std::clamp(block.inputValue(strandControlSamples).asInt(), 4, 256);
     s.guideSamples = block.inputValue(guideSamples).asInt();
     if (s.guideSamples != 0) s.guideSamples = std::clamp(s.guideSamples, 16, kMaxSegments+1);
     if (block.inputValue(longitudinalMode).asShort() == 1) {
@@ -306,10 +334,59 @@ Settings BraidGenerator::readSettings(MDataBlock& block, MFnNurbsCurve& curve) {
             throw std::runtime_error("Automatic mesh resolution exceeds 8192 segments; increase pitch, lower cycles/quality, or use Manual resolution");
         s.segments = static_cast<int>(std::clamp(desired, 8.0, double(kMaxSegments)));
     }
+    s.controlsEnabled = controlsRequested && block.inputValue(strandControlsEnabled).asBool();
+    if (s.controlsEnabled) readControls(block, s);
     return s;
 }
 
-std::array<Strand,3> BraidGenerator::sample(MFnNurbsCurve& curve, const Settings& s, int count) {
+void BraidGenerator::readControls(MDataBlock& block, Settings& s) {
+    MStatus st;
+    auto editedArray = block.inputArrayValue(strandControlCurves, &st); check(st, "Read strand controls");
+    auto restArray = block.inputArrayValue(strandRestCurves, &st); check(st, "Read strand control baselines");
+    const MMatrix parentMatrix = s.parentInverse.inverse();
+    for (unsigned k = 0; k < 3; ++k) {
+        if (!MPlug(thisMObject(), strandControlCurves).elementByLogicalIndex(k).isDestination() ||
+            !MPlug(thisMObject(), strandRestCurves).elementByLogicalIndex(k).isDestination())
+            throw std::runtime_error("A strand control or its baseline is disconnected; undo the edit or recreate the strand controls");
+        check(editedArray.jumpToElement(k), "Find strand control");
+        check(restArray.jumpToElement(k), "Find strand control baseline");
+        auto& pair = s.controls[k];
+        pair.edited = editedArray.inputValue(&st).asNurbsCurveTransformed(); check(st, "Read edited strand curve");
+        pair.rest = restArray.inputValue(&st).asNurbsCurve(); check(st, "Read baseline strand curve");
+        if (pair.edited.isNull() || pair.rest.isNull()) throw std::runtime_error("A strand control contains empty curve data");
+        MFnNurbsCurve edited(pair.edited, &st); check(st, "Inspect edited strand curve");
+        MFnNurbsCurve rest(pair.rest, &st); check(st, "Inspect baseline strand curve");
+        if (edited.form() != MFnNurbsCurve::kOpen || rest.form() != MFnNurbsCurve::kOpen ||
+            edited.degree() != 3 || rest.degree() != 3 || edited.numCVs() != rest.numCVs() ||
+            rest.numCVs() != s.controlSamples)
+            throw std::runtime_error("Strand control topology changed; do not rebuild, insert or remove its control points");
+        MDoubleArray editedKnots, restKnots;
+        check(edited.getKnots(editedKnots), "Read edited strand knots");
+        check(rest.getKnots(restKnots), "Read baseline strand knots");
+        if (editedKnots.length() != restKnots.length()) throw std::runtime_error("Strand control knot counts do not match");
+        for (unsigned i = 0; i < restKnots.length(); ++i)
+            if (!std::isfinite(editedKnots[i]) || !std::isfinite(restKnots[i]) || std::abs(editedKnots[i]-restKnots[i]) > 1.0e-10)
+                throw std::runtime_error("Strand control knots changed; undo the rebuild or knot edit");
+        check(rest.getKnotDomain(pair.start, pair.end), "Read strand control parameter domain");
+        if (!std::isfinite(pair.start) || !std::isfinite(pair.end) || pair.end-pair.start < kEpsilon)
+            throw std::runtime_error("Strand control parameter domain is invalid");
+        MPointArray editedCVs, restCVs;
+        check(edited.getCVs(editedCVs, MSpace::kObject), "Read edited strand control points");
+        check(rest.getCVs(restCVs, MSpace::kObject), "Read baseline strand control points");
+        for (unsigned i = 0; i < restCVs.length(); ++i) {
+            if (!finite(editedCVs[i]) || !finite(restCVs[i]) || !std::isfinite(editedCVs[i].w) ||
+                !std::isfinite(restCVs[i].w) || std::abs(editedCVs[i].w-1.0) > 1.0e-10 || std::abs(restCVs[i].w-1.0) > 1.0e-10)
+                throw std::runtime_error("Strand controls require finite, nonrational control points");
+            const MPoint restWorld = restCVs[i]*parentMatrix;
+            if (!finite(restWorld)) throw std::runtime_error("Strand control transform is invalid");
+            // Avoid introducing rounding-only deformation on an untouched cage.
+            const double scale = std::max({1.0, std::abs(restWorld.x), std::abs(restWorld.y), std::abs(restWorld.z)});
+            if ((editedCVs[i]-restWorld).length() > 1.0e-12*scale) pair.changed = true;
+        }
+    }
+}
+
+std::array<Strand,3> BraidGenerator::sample(MFnNurbsCurve& curve, const Settings& s, int count, bool controlCage) {
     std::vector<MPoint> points(count);
     std::vector<MVector> tangents(count);
     MFloatArray positions, sizes, rotations;
@@ -332,6 +409,14 @@ std::array<Strand,3> BraidGenerator::sample(MFnNurbsCurve& curve, const Settings
     std::array<Strand,3> strands;
     for (int k = 0; k < 3; ++k) {
         auto& strand = strands[k]; strand.centers.resize(count); strand.radii.resize(count);
+        const auto& control = s.controls[k];
+        const bool adjust = s.controlsEnabled && control.changed && !controlCage;
+        MFnNurbsCurve edited, rest;
+        if (adjust) {
+            check(edited.setObject(control.edited), "Attach edited strand curve");
+            check(rest.setObject(control.rest), "Attach baseline strand curve");
+        }
+        const MMatrix parentMatrix = s.parentInverse.inverse();
         MVector initialNormal;
         for (int i = 0; i < count; ++i) {
             if (!std::isfinite(sizes[i]) || !std::isfinite(rotations[i])) throw std::runtime_error("Ramp entries must be finite");
@@ -342,10 +427,21 @@ std::array<Strand,3> BraidGenerator::sample(MFnNurbsCurve& curve, const Settings
             const double theta = kTau*(s.cycles*t + double(k)/3.0) + s.phase;
             strand.centers[i] = points[i] + n*(0.35*s.size*scale*std::cos(theta))
                                           + b*(0.20*s.size*s.flatness*scale*std::sin(2.0*theta));
+            if (adjust) {
+                // Parameter correspondence, not nearest-point binding, keeps adjacent
+                // crossings independent and works at every mesh/guide resolution.
+                const double u = control.start + t*(control.end-control.start);
+                MPoint editedPoint, restPoint;
+                check(edited.getPointAtParam(u, editedPoint, MSpace::kObject), "Sample edited strand curve");
+                check(rest.getPointAtParam(u, restPoint, MSpace::kObject), "Sample baseline strand curve");
+                const MVector delta = editedPoint - restPoint*parentMatrix;
+                if (!finite(delta)) throw std::runtime_error("Strand control evaluated to nonfinite coordinates");
+                strand.centers[i] += delta;
+            }
             strand.radii[i] = 0.15*s.size*s.thickness*scale;
             if (!i) initialNormal = n;
         }
-        strand.frames = transportFrames(strand.centers, nullptr, initialNormal);
+        if (!controlCage) strand.frames = transportFrames(strand.centers, nullptr, initialNormal);
     }
     return strands;
 }
@@ -404,8 +500,27 @@ MObject BraidGenerator::makeGuide(const Strand& strand, const Settings& s, int g
     return result;
 }
 
+MObject BraidGenerator::makeControl(const Strand& strand, const Settings& s) {
+    const unsigned count = static_cast<unsigned>(strand.centers.size());
+    MPointArray cvs;
+    cvs.setLength(count);
+    for (unsigned i = 0; i < count; ++i) cvs[i] = strand.centers[i]*s.parentInverse;
+    // Maya omits one duplicate endpoint knot at each end: count + degree - 1.
+    MDoubleArray knots;
+    knots.setLength(count+2);
+    for (unsigned i = 0; i < knots.length(); ++i)
+        knots[i] = std::clamp(double(i)-2.0, 0.0, double(count)-3.0);
+    MStatus st;
+    MFnNurbsCurveData data;
+    MObject result = data.create(&st); check(st, "Create strand control data");
+    MFnNurbsCurve curve;
+    curve.create(cvs, knots, 3, MFnNurbsCurve::kOpen, false, false, result, &st);
+    check(st, "Create strand control curve");
+    return result;
+}
+
 void BraidGenerator::clearGeometry(MDataBlock& block, const MObject& attr) {
-    const unsigned n = attr == outMesh ? 3u : 27u;
+    const unsigned n = attr == outGuideCurves ? 27u : 3u;
     MStatus st;
     MArrayDataHandle output = block.outputArrayValue(attr, &st); check(st, "Read output array");
     MArrayDataBuilder builder(&block, attr, n, &st); check(st, "Create output array builder");
@@ -420,8 +535,8 @@ void BraidGenerator::clearGeometry(MDataBlock& block, const MObject& attr) {
 
 MStatus BraidGenerator::compute(const MPlug& plug, MDataBlock& block) {
     const MObject attr = plug.attribute();
-    const bool meshRequested = attr == outMesh, guideRequested = attr == outGuideCurves;
-    if (!meshRequested && !guideRequested && attr != outLength && attr != outCycles && attr != outSegments && attr != outStatus)
+    const bool meshRequested = attr == outMesh, guideRequested = attr == outGuideCurves, controlRequested = attr == outControlCurves;
+    if (!meshRequested && !guideRequested && !controlRequested && attr != outLength && attr != outCycles && attr != outSegments && attr != outStatus)
         return MS::kUnknownParameter;
     Settings s;
     std::string status = "OK";
@@ -439,9 +554,9 @@ MStatus BraidGenerator::compute(const MPlug& plug, MDataBlock& block) {
         MObject input = block.inputValue(inputCurve, &st).asNurbsCurveTransformed(); check(st, "Read source curve");
         if (input.isNull()) throw std::runtime_error("Input curve is not connected; select the source and use Rebind");
         MFnNurbsCurve curve(input, &st); check(st, "Read source curve data");
-        s = readSettings(block, curve);
-        if (meshRequested || guideRequested) {
-            int count = s.segments+1;
+        s = readSettings(block, curve, !controlRequested);
+        if (meshRequested || guideRequested || controlRequested) {
+            int count = controlRequested ? s.controlSamples : s.segments+1;
             if (guideRequested) {
                 const double desired = std::max(64.0, std::ceil(s.cycles*64.0)+1.0);
                 if (!s.guideSamples && desired > double(kMaxSegments+1)) {
@@ -450,12 +565,13 @@ MStatus BraidGenerator::compute(const MPlug& plug, MDataBlock& block) {
                 }
                 count = s.guideSamples ? s.guideSamples : static_cast<int>(desired);
             }
-            const auto strands = sample(curve, s, count);
-            const unsigned n = meshRequested ? 3u : 27u;
+            const auto strands = sample(curve, s, count, controlRequested);
+            const unsigned n = guideRequested ? 27u : 3u;
             MArrayDataHandle output = block.outputArrayValue(attr, &st); check(st, "Read output array");
             MArrayDataBuilder builder(&block, attr, n, &st); check(st, "Create output array builder");
             for (unsigned i = 0; i < n; ++i) {
-                const MObject result = meshRequested ? makeMesh(strands[i], s) : makeGuide(strands[i/9], s, i%9);
+                const MObject result = meshRequested ? makeMesh(strands[i], s) :
+                    (controlRequested ? makeControl(strands[i], s) : makeGuide(strands[i/9], s, i%9));
                 builder.addElement(i).setMObject(result);
             }
             check(output.set(builder), "Set braid outputs"); output.setAllClean();
@@ -468,6 +584,7 @@ MStatus BraidGenerator::compute(const MPlug& plug, MDataBlock& block) {
             // leaves a valid manual-resolution mesh intact until extraction is adjusted.
             if (!guideOnlyError) clearGeometry(block, outMesh);
             clearGeometry(block, outGuideCurves);
+            if (!guideOnlyError) clearGeometry(block, outControlCurves);
         } catch (...) { return MS::kFailure; }
     }
     auto setDouble = [&](const MObject& output, double value) { auto handle = block.outputValue(output); handle.setDouble(value); handle.setClean(); };
@@ -479,7 +596,7 @@ MStatus BraidGenerator::compute(const MPlug& plug, MDataBlock& block) {
 }
 
 MStatus initializePlugin(MObject object) {
-    MFnPlugin plugin(object, "BraidTools", "1.0.0", "Any");
+    MFnPlugin plugin(object, "BraidTools", "1.1.0", "Any");
     MStatus st = plugin.registerNode("braidToolsGenerator", BraidGenerator::id, BraidGenerator::creator, BraidGenerator::initialize);
     if (!st) return st;
     MGlobal::executePythonCommand(

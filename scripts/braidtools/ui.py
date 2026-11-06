@@ -415,6 +415,47 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self._numeric(geometry, "strandFlatness", "股线截面扁平", 0.01, 10, 0.05, 3)
         self._numeric(geometry, "orientation", "整体朝向 / °", -360000, 360000, -180, 180)
 
+        strands = self._section("分股曲线 · 单独调整三股")
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(QtWidgets.QLabel("每股控制点"))
+        self.strand_samples = QtWidgets.QSpinBox()
+        self.strand_samples.setObjectName("BraidToolsStrandSamples")
+        self.strand_samples.setRange(4, 256)
+        self.strand_samples.setValue(32)
+        self.strand_samples.setToolTip("仅用于首次创建，之后点数固定；重复创建会保留已有修改。")
+        row.addWidget(self.strand_samples)
+        self.enable_strands_button = QtWidgets.QPushButton("创建三条分股控制曲线")
+        self.enable_strands_button.setObjectName("BraidToolsEnableStrandControls")
+        self.enable_strands_button.clicked.connect(
+            lambda: self._run(lambda: api.enable_strand_controls(self._nodes, self.strand_samples.value())))
+        row.addWidget(self.enable_strands_button, 1)
+        strands.addLayout(row)
+        self.strand_buttons = []
+        for index in range(3):
+            row = QtWidgets.QHBoxLayout()
+            select = QtWidgets.QPushButton("选择第 %d 股控制点" % (index + 1))
+            select.setObjectName("BraidToolsSelectStrand%d" % (index + 1))
+            select.clicked.connect(lambda unused=False, strand=index: self._select_strand(strand))
+            reset = QtWidgets.QPushButton("重置第 %d 股" % (index + 1))
+            reset.setObjectName("BraidToolsResetStrand%d" % (index + 1))
+            reset.clicked.connect(lambda unused=False, strand=index:
+                                  self._run(lambda: api.reset_strand_controls(self._nodes, strand)))
+            row.addWidget(select, 2)
+            row.addWidget(reset)
+            strands.addLayout(row)
+            self.strand_buttons.extend([select, reset])
+        self.reset_all_strands_button = QtWidgets.QPushButton("重置全部三股")
+        self.reset_all_strands_button.setObjectName("BraidToolsResetAllStrands")
+        self.reset_all_strands_button.clicked.connect(
+            lambda: self._run(lambda: api.reset_strand_controls(self._nodes)))
+        strands.addWidget(self.reset_all_strands_button)
+        self.strand_buttons.append(self.reset_all_strands_button)
+        self.strand_hint = QtWidgets.QLabel(
+            "创建后选择控制点，再框选局部点并移动。主曲线和参数仍可编辑。\n"
+            "控制曲线是平滑调整笼，不必贴合每个编织弯；新提取的导向线会匹配调整后的模型。")
+        self.strand_hint.setWordWrap(True)
+        strands.addWidget(self.strand_hint)
+
         size = self._section("尺寸 Ramp · 多选时同步此 Ramp")
         self.size_ramp = RampEditor()
         size.addWidget(self.size_ramp)
@@ -603,6 +644,16 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         if sources:
             cmds.select(sources, replace=True)
 
+    def _select_strand(self, strand):
+        self._end_edit()
+        try:
+            controls = [api.strand_controls(node) for node in self._nodes]
+            if not controls or any(len(items) != 3 for items in controls):
+                raise ValueError("请先为所选资产创建分股控制曲线。")
+            cmds.select([items[strand] + ".cv[*]" for items in controls], replace=True)
+        except (RuntimeError, ValueError) as exc:
+            self._error(exc)
+
     def _delete_selected(self):
         """Confirm and delete only the asset identities selected in this list."""
         if self._disposed or self._delete_active or self._rebind_active:
@@ -780,7 +831,14 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def _selection_changed(self, *unused):
         if self._syncing or self._disposed or self._rebind_active or self._delete_active:
             return
-        targets = api.generators_from_selection()
+        try:
+            targets = api.generators_from_selection()
+        except (RuntimeError, ValueError) as exc:
+            self._end_edit()
+            self._nodes = []
+            self.refresh(preserve_targets=True)
+            self._error(exc)
+            return
         if targets:
             self._end_edit()
             self._nodes = targets
@@ -794,9 +852,15 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         if self._syncing or self._disposed or self._rebind_active or self._delete_active:
             return
         self._syncing = True
+        selection_error = None
         try:
-            nodes = cmds.ls(type=api.NODE_TYPE) or []
-            selected = [] if preserve_targets else api.generators_from_selection()
+            nodes = api.all_generators()
+            try:
+                selected = [] if preserve_targets else api.generators_from_selection()
+            except (RuntimeError, ValueError) as exc:
+                selected = []
+                self._nodes = []
+                selection_error = exc
             self._nodes = selected or [node for node in self._nodes if node in nodes]
             self.assets.clear()
             for node in nodes:
@@ -814,6 +878,8 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         finally:
             self._syncing = False
         self._load_values()
+        if selection_error is not None:
+            self._error(selection_error)
 
     def _load_values(self):
         self.controls.setEnabled(bool(self._nodes))
@@ -839,6 +905,14 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             if size:
                 self.tip.set_value(size[-1][1])
             self._update_mode_controls()
+            try:
+                ready = all(bool(api.strand_controls(target)) for target in self._nodes)
+            except (RuntimeError, ValueError):
+                ready = False  # The status line reports the damaged graph.
+            self.enable_strands_button.setEnabled(not ready)
+            self.strand_samples.setEnabled(not ready)
+            for button in self.strand_buttons:
+                button.setEnabled(ready)
         finally:
             self._syncing = False
         self._status()
@@ -854,15 +928,15 @@ class BraidToolsPanel(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def _status(self):
         if not self._nodes or not cmds.objExists(self._nodes[0]):
             return
-        node = self._nodes[0]
         try:
+            node = api.geometry_generator(self._nodes[0])
             status = cmds.getAttr(node + ".outStatus")
             text = "长度 %.3f cm · 循环 %.3f · 轴向 %d 段" % (
                 cmds.getAttr(node + ".outLength"), cmds.getAttr(node + ".outCycles"), cmds.getAttr(node + ".outSegments"))
             if status != "OK":
                 text += "\n" + status
             self.status.setText(text)
-        except RuntimeError as exc:
+        except (RuntimeError, ValueError) as exc:
             self.status.setText(str(exc))
 
     def dispose(self):

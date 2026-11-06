@@ -856,5 +856,343 @@
     ],
     "python_3_9_and_3_10_syntax_check": "passed; not a host or binding runtime test"
   },
-  "historical_sections_scope": "Earlier versions, sourceSha256, installer and deletionUpdate entries are historical records; the 1.0.3 build/install update is recorded separately under maya_2023_2024_build_preview."
+  "historical_sections_scope": "Earlier versions, sourceSha256, installer and deletionUpdate entries are historical records; the 1.0.3 build/install update is recorded separately under maya_2023_2024_build_preview.",
+  "strand_controls_1_1_0": {
+    "package_version": "1.1.0",
+    "date": "2026-11-06",
+    "scope": "Isolated mayapy and offscreen Qt; no production scenes or interactive viewport acceptance.",
+    "compiler": "Visual Studio 2022 / MSVC 19.44.35229.0",
+    "windows_sdk": "10.0.26100.0",
+    "builds": {
+      "2022": {
+        "status": "passed",
+        "sha256": "0d837f92a029150d4914ad6099c5e78af6478e923878f5eb554298f4e323a466",
+        "bytes": 102400,
+        "exported_api_version": 20220000
+      },
+      "2023": {
+        "status": "passed",
+        "sha256": "6dc216d8347b285dbbf5f2c7a5360ad202a2c1c9dff61988e7de6141a4f98690",
+        "bytes": 102400,
+        "exported_api_version": 20230000
+      },
+      "2024": {
+        "status": "passed",
+        "sha256": "c9e1e58324a29a0d538c6f44f3595c6709d3b83bb6e5db6f5e9ec8917822fdfe",
+        "bytes": 102400,
+        "exported_api_version": 20240000
+      },
+      "2025": {
+        "status": "passed",
+        "sha256": "d4850e522e84ab72d331d929abdaf56f880bcbc1cf3aeb5a5cb85a1dbdca1a0a",
+        "bytes": 102400,
+        "exported_api_version": 20250000
+      },
+      "2026": {
+        "status": "passed",
+        "sha256": "f8a76dfc1a5eb8289419ab43c8e0a62d1588e8e3d3ddebe12c6922c36300f02d",
+        "bytes": 102400,
+        "exported_api_version": 20260300
+      }
+    },
+    "runtime": {
+      "2022": {
+        "integration": {
+          "status": "passed",
+          "cases": [
+            "create_multi_and_repeat",
+            "create_undo_redo",
+            "continuous_cv_batch_and_undo",
+            "density_modes_and_length",
+            "localized_size_and_rotation_ramps",
+            "batch_ramp_scope_and_undo",
+            "mesh_resolution_independent_guides",
+            "names_parenting_nonuniform_scale",
+            "initial_frame_continuity",
+            "native_rebuild_history_on",
+            "native_rebuild_history_off",
+            "tool_rebuild_and_rebind",
+            "static_guides_root_disks_and_bake",
+            "save_reopen_without_ui",
+            "invalid_and_missing_inputs",
+            "resolution_limits_and_recovery",
+            "degenerate_root_extraction_is_atomic",
+            "twenty_asset_performance"
+          ]
+        },
+        "delete": {
+          "status": "passed",
+          "cases": [
+            "single_snapshots_undo_redo",
+            "multi_explicit_targets",
+            "shared_source",
+            "missing_source_and_root",
+            "root_link_and_partial_mesh",
+            "no_root_links_preserves_unknown_parents",
+            "foreign_children_and_custom_transform",
+            "inserted_and_external_ancestors",
+            "locked_batch",
+            "instances_and_shared_outputs",
+            "reference_batch",
+            "invalid_selection_and_undo_disabled"
+          ]
+        },
+        "delete_ui": {
+          "status": "passed",
+          "cases": [
+            "no_selection_and_cancel",
+            "single_shared_source_and_undo_redo",
+            "multiple_targets_one_undo",
+            "rename_while_confirming",
+            "locked_batch_refusal",
+            "deleted_target_cannot_match_replacement",
+            "stale_row_cannot_match_replacement",
+            "reverse_root_link_changed_during_confirmation"
+          ]
+        },
+        "strand_controls": {
+          "status": "passed",
+          "cases": [
+            "legacy_upgrade_zero_edit_and_identity",
+            "one_strand_locality_and_delta_field",
+            "main_path_density_and_ramps_keep_edits",
+            "replacing_ramp_entries_keeps_live_controls",
+            "source_and_asset_transforms",
+            "guides_roots_and_bake_match_adjusted_geometry",
+            "reset_single_all_and_undo_redo",
+            "enabling_is_one_undoable_operation",
+            "save_reopen_preserves_live_controls",
+            "delete_controls_with_snapshots_and_undo",
+            "deletion_preserves_user_children",
+            "external_control_consumer_refuses_deletion",
+            "missing_native_control_input_clears_geometry",
+            "inserted_control_knot_invalidates_and_undo_recovers",
+            "indirect_control_rebind_cycle_is_refused",
+            "enable_preflight_failure_preserves_previous_user_undo",
+            "multiple_assets_and_cycle_free_evaluation",
+            "edit_latency_observation"
+          ]
+        },
+        "strand_controls_ui": {
+          "status": "passed",
+          "cases": [
+            "selection_gates",
+            "enable_respects_count_and_hides_helper_rows",
+            "select_each_strand_keeps_public_asset",
+            "reset_one_via_widget_and_undo",
+            "batch_enable_and_reset_all",
+            "enable_button_one_undo_redo",
+            "panel_preview"
+          ]
+        },
+        "module_qt": {
+          "status": "passed",
+          "cases": [],
+          "python": "3.7.7",
+          "qt": "5.15.2"
+        }
+      },
+      "2025": {
+        "integration": {
+          "status": "passed",
+          "cases": [
+            "create_multi_and_repeat",
+            "create_undo_redo",
+            "continuous_cv_batch_and_undo",
+            "density_modes_and_length",
+            "localized_size_and_rotation_ramps",
+            "batch_ramp_scope_and_undo",
+            "mesh_resolution_independent_guides",
+            "names_parenting_nonuniform_scale",
+            "initial_frame_continuity",
+            "native_rebuild_history_on",
+            "native_rebuild_history_off",
+            "tool_rebuild_and_rebind",
+            "static_guides_root_disks_and_bake",
+            "save_reopen_without_ui",
+            "invalid_and_missing_inputs",
+            "resolution_limits_and_recovery",
+            "degenerate_root_extraction_is_atomic",
+            "twenty_asset_performance"
+          ]
+        },
+        "delete": {
+          "status": "passed",
+          "cases": [
+            "single_snapshots_undo_redo",
+            "multi_explicit_targets",
+            "shared_source",
+            "missing_source_and_root",
+            "root_link_and_partial_mesh",
+            "no_root_links_preserves_unknown_parents",
+            "foreign_children_and_custom_transform",
+            "inserted_and_external_ancestors",
+            "locked_batch",
+            "instances_and_shared_outputs",
+            "reference_batch",
+            "invalid_selection_and_undo_disabled"
+          ]
+        },
+        "delete_ui": {
+          "status": "passed",
+          "cases": [
+            "no_selection_and_cancel",
+            "single_shared_source_and_undo_redo",
+            "multiple_targets_one_undo",
+            "rename_while_confirming",
+            "locked_batch_refusal",
+            "deleted_target_cannot_match_replacement",
+            "stale_row_cannot_match_replacement",
+            "reverse_root_link_changed_during_confirmation"
+          ]
+        },
+        "strand_controls": {
+          "status": "passed",
+          "cases": [
+            "legacy_upgrade_zero_edit_and_identity",
+            "one_strand_locality_and_delta_field",
+            "main_path_density_and_ramps_keep_edits",
+            "replacing_ramp_entries_keeps_live_controls",
+            "source_and_asset_transforms",
+            "guides_roots_and_bake_match_adjusted_geometry",
+            "reset_single_all_and_undo_redo",
+            "enabling_is_one_undoable_operation",
+            "save_reopen_preserves_live_controls",
+            "delete_controls_with_snapshots_and_undo",
+            "deletion_preserves_user_children",
+            "external_control_consumer_refuses_deletion",
+            "missing_native_control_input_clears_geometry",
+            "inserted_control_knot_invalidates_and_undo_recovers",
+            "indirect_control_rebind_cycle_is_refused",
+            "enable_preflight_failure_preserves_previous_user_undo",
+            "multiple_assets_and_cycle_free_evaluation",
+            "edit_latency_observation"
+          ]
+        },
+        "strand_controls_ui": {
+          "status": "passed",
+          "cases": [
+            "selection_gates",
+            "enable_respects_count_and_hides_helper_rows",
+            "select_each_strand_keeps_public_asset",
+            "reset_one_via_widget_and_undo",
+            "batch_enable_and_reset_all",
+            "enable_button_one_undo_redo",
+            "panel_preview"
+          ]
+        },
+        "module_qt": {
+          "status": "passed",
+          "cases": [],
+          "python": "3.11.4",
+          "qt": "6.5.3"
+        }
+      },
+      "2026": {
+        "integration": {
+          "status": "passed",
+          "cases": [
+            "create_multi_and_repeat",
+            "create_undo_redo",
+            "continuous_cv_batch_and_undo",
+            "density_modes_and_length",
+            "localized_size_and_rotation_ramps",
+            "batch_ramp_scope_and_undo",
+            "mesh_resolution_independent_guides",
+            "names_parenting_nonuniform_scale",
+            "initial_frame_continuity",
+            "native_rebuild_history_on",
+            "native_rebuild_history_off",
+            "tool_rebuild_and_rebind",
+            "static_guides_root_disks_and_bake",
+            "save_reopen_without_ui",
+            "invalid_and_missing_inputs",
+            "resolution_limits_and_recovery",
+            "degenerate_root_extraction_is_atomic",
+            "twenty_asset_performance"
+          ]
+        },
+        "delete": {
+          "status": "passed",
+          "cases": [
+            "single_snapshots_undo_redo",
+            "multi_explicit_targets",
+            "shared_source",
+            "missing_source_and_root",
+            "root_link_and_partial_mesh",
+            "no_root_links_preserves_unknown_parents",
+            "foreign_children_and_custom_transform",
+            "inserted_and_external_ancestors",
+            "locked_batch",
+            "instances_and_shared_outputs",
+            "reference_batch",
+            "invalid_selection_and_undo_disabled"
+          ]
+        },
+        "delete_ui": {
+          "status": "passed",
+          "cases": [
+            "no_selection_and_cancel",
+            "single_shared_source_and_undo_redo",
+            "multiple_targets_one_undo",
+            "rename_while_confirming",
+            "locked_batch_refusal",
+            "deleted_target_cannot_match_replacement",
+            "stale_row_cannot_match_replacement",
+            "reverse_root_link_changed_during_confirmation"
+          ]
+        },
+        "strand_controls": {
+          "status": "passed",
+          "cases": [
+            "legacy_upgrade_zero_edit_and_identity",
+            "one_strand_locality_and_delta_field",
+            "main_path_density_and_ramps_keep_edits",
+            "replacing_ramp_entries_keeps_live_controls",
+            "source_and_asset_transforms",
+            "guides_roots_and_bake_match_adjusted_geometry",
+            "reset_single_all_and_undo_redo",
+            "enabling_is_one_undoable_operation",
+            "save_reopen_preserves_live_controls",
+            "delete_controls_with_snapshots_and_undo",
+            "deletion_preserves_user_children",
+            "external_control_consumer_refuses_deletion",
+            "missing_native_control_input_clears_geometry",
+            "inserted_control_knot_invalidates_and_undo_recovers",
+            "indirect_control_rebind_cycle_is_refused",
+            "enable_preflight_failure_preserves_previous_user_undo",
+            "multiple_assets_and_cycle_free_evaluation",
+            "edit_latency_observation"
+          ]
+        },
+        "strand_controls_ui": {
+          "status": "passed",
+          "cases": [
+            "selection_gates",
+            "enable_respects_count_and_hides_helper_rows",
+            "select_each_strand_keeps_public_asset",
+            "reset_one_via_widget_and_undo",
+            "batch_enable_and_reset_all",
+            "enable_button_one_undo_redo",
+            "panel_preview"
+          ]
+        },
+        "module_qt": {
+          "status": "passed",
+          "cases": [],
+          "python": "3.11.9",
+          "qt": "6.5.3"
+        }
+      }
+    },
+    "installer_tests": {
+      "passed": 19,
+      "failed": 0
+    },
+    "code_review": "No unresolved critical or important findings.",
+    "untested_hosts": [
+      2023,
+      2024
+    ]
+  }
 }

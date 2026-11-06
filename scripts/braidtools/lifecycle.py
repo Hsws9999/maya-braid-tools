@@ -26,11 +26,11 @@ def refresh_registry():
     if api.NODE_TYPE not in (cmds.allNodeTypes() or []):
         _source_handles = handles
         return
-    for node in cmds.ls(type=api.NODE_TYPE) or []:
-        source = api.source_transform(node)
-        if not source:
-            continue
+    for node in api.all_generators():
         try:
+            source = api.source_transform(node)
+            if not source:
+                continue
             selection = om.MSelectionList()
             selection.add(source)
             handle = om.MObjectHandle(selection.getDependNode(0))
@@ -59,11 +59,11 @@ def reconnect_all():
     try:
         if undo_state:
             cmds.undoInfo(stateWithoutFlush=False)
-        for node in cmds.ls(type=api.NODE_TYPE) or []:
-            source = api.source_transform(node)
-            if not source:
-                continue
+        for node in api.all_generators():
             try:
+                source = api.source_transform(node)
+                if not source:
+                    continue
                 shape = api._curve_shape(source)
                 instance = api._dag_path(shape).instanceNumber()
                 plug = "%s.worldSpace[%d]" % (shape, instance)

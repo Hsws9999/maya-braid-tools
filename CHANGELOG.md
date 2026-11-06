@@ -1,5 +1,16 @@
 # 变更记录 / Changelog
 
+## 1.1.0 — 三股独立曲线控制
+
+- 现有辫子可创建三条独立分股控制曲线，默认 32 个控制点，支持首次创建时选择数量、单股选择与重置、全部重置。
+- 主曲线和造型参数继续有效；基础控制曲线随参数更新，保留用户的 CV 偏移。未编辑控制曲线时保持原有模型结果。
+- 使用单向的基础生成、曲线编辑、几何生成关系，控制点变更在原生节点中求值；无需面板保持打开，无场景写入轮询。
+- 新提取的 XGen 源导向和烘焙网格采用分股调整结果，既有独立快照不变。
+- 创建、重置、保存重开和删除适配辅助节点归属；安全删除保留源路径、快照和用户添加的子对象。
+- 五个年份均由更新后的源码重新构建；Maya 2023／2024 仍为缺少实际宿主验收的兼容预览。验证结果见[验证记录](docs/验证记录.md)。
+- 安装包继续命名 `BraidTools1.0.zip`，内部版本为 1.1.0；安装器不覆盖已有安装。带分股控制的场景需要 1.1.0 或更新版本。
+- English: add three independently editable strand-control curves, persistent CV offsets over the live master path, per-strand/all reset, adjusted guide extraction and mesh baking, and undoable ownership-aware operations. The filename stays `BraidTools1.0.zip`; internal version is 1.1.0. Maya 2023/2024 remain compile-only compatibility previews.
+
 ## 1.0.3 — Maya 2023／2024 兼容预览
 
 - 完整安装包新增 Windows Maya 2023、2024 对应的 `.mll`，覆盖 2022–2026 五个年份；下载文件名保持 `BraidTools1.0.zip`。

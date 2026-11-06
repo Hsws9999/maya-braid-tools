@@ -21,6 +21,11 @@ PARAMETERS = {
     "autoQuality", "guideSamples",
 }
 INTEGER_PARAMETERS = {"longitudinalMode", "lengthSegments", "radialSides", "guideSamples"}
+_CONTROL_FORWARD = tuple(sorted(PARAMETERS)) + (
+    "densityMode", "sizeRamp", "rotationRamp", "inputCurve", "sourceWorldMatrix",
+    "outputParentInverseMatrix", "frameReferenceTangent", "frameReferenceNormal",
+    "strandControlSamples",
+)
 _operation_depth = 0
 
 
@@ -156,12 +161,55 @@ def _curve_transform(curve):
     return (cmds.listRelatives(_curve_shape(curve), parent=True, fullPath=True) or [])[0]
 
 
+def primary_generator(node):
+    """Resolve the private deformation stage through a reciprocal message link."""
+    node = _long(node)
+    if cmds.nodeType(node) != NODE_TYPE:
+        raise ValueError("不是 BraidTools 生成节点: %s" % node)
+    if not cmds.attributeQuery("braidToolsControlOwner", node=node, exists=True):
+        return node
+    owners = cmds.listConnections(node + ".braidToolsControlOwner", source=True, destination=False) or []
+    if (len(owners) != 1 or cmds.nodeType(owners[0]) != NODE_TYPE
+            or cmds.attributeQuery("braidToolsControlOwner", node=owners[0], exists=True)):
+        raise ValueError("分股控制的辅助节点归属已损坏: %s" % node)
+    owner = _long(owners[0])
+    if (not cmds.attributeQuery("strandControlDriver", node=owner, exists=True)
+            or not cmds.isConnected(node + ".message", owner + ".strandControlDriver")):
+        raise ValueError("分股控制的双向归属连接已损坏: %s" % node)
+    return owner
+
+
+def all_generators():
+    """List user-facing assets only; helpers are never independent assets."""
+    return [node for node in (cmds.ls(type=NODE_TYPE) or [])
+            if not cmds.attributeQuery("braidToolsControlOwner", node=node, exists=True)]
+
+
+def geometry_generator(node):
+    """Return the effective mesh/guide stage, retaining primary public identity."""
+    node = primary_generator(node)
+    if not cmds.attributeQuery("strandControlDriver", node=node, exists=True):
+        return node
+    drivers = cmds.listConnections(node + ".strandControlDriver", source=True, destination=False) or []
+    if not drivers:
+        controls = (cmds.listConnections(node + ".strandControls", source=True, destination=False)
+                    if cmds.attributeQuery("strandControls", node=node, exists=True) else [])
+        if controls:
+            raise ValueError("分股控制辅助节点缺失，不能使用未调整的几何代替: %s" % node)
+        return node
+    if len(drivers) != 1 or primary_generator(drivers[0]) != node:
+        raise ValueError("分股控制辅助节点归属不明确: %s" % node)
+    return _long(drivers[0])
+
+
 def source_transform(node):
+    node = primary_generator(node)
     values = cmds.listConnections(node + ".sourceCurve", source=True, destination=False) or []
     return _long(values[0]) if values else None
 
 
 def asset_root(node):
+    node = primary_generator(node)
     values = cmds.listConnections(node + ".assetRoot", source=True, destination=False) or []
     return _long(values[0]) if values else None
 
@@ -172,7 +220,7 @@ def _generators(nodes):
         node = _long(node)
         if cmds.nodeType(node) != NODE_TYPE:
             raise ValueError("不是 BraidTools 生成节点: %s" % node)
-        result.append(node)
+        result.append(primary_generator(node))
     return _unique(result)
 
 
@@ -201,7 +249,7 @@ def generators_from_selection(selection=None):
                     result.extend(cmds.listConnections(parents[0] + ".message", source=False, destination=True, type=NODE_TYPE) or [])
             parents = cmds.listRelatives(path, parent=True, fullPath=True) or []
             path = parents[0] if parents else None
-    return _unique(result)
+    return _unique([primary_generator(node) for node in result])
 
 
 def _label(source):
@@ -231,8 +279,46 @@ def _root_reference_frame(shape_path):
     return (tangent.x, tangent.y, tangent.z), (normal.x, normal.y, normal.z)
 
 
+def _check_source_dependency(node, shape):
+    """Reject direct/indirect data cycles before replacing any source link.
+
+    Message links describe ownership and do not carry geometry. Traverse only
+    data connections, including transform ancestors whose matrices contribute
+    to worldSpace. This also catches a history/constraint between two assets.
+    """
+    targets = [_plug(node, "message").node()]
+    driver = geometry_generator(node)
+    if driver != node:
+        targets.append(_plug(driver, "message").node())
+    target_ids = {om.MObjectHandle(item).hashCode() for item in targets}
+    pending = [_dag_path(shape).node()]
+    seen = set()
+    while pending:
+        current = pending.pop()
+        identity = om.MObjectHandle(current).hashCode()
+        if identity in target_ids:
+            raise ValueError("不能绑定该曲线：它直接或间接依赖此辫子，会形成循环依赖。")
+        if identity in seen:
+            continue
+        seen.add(identity)
+        fn = om.MFnDependencyNode(current)
+        for plug in fn.getConnections():
+            if plug.attribute().hasFn(om.MFn.kMessageAttribute):
+                continue
+            for source in plug.connectedTo(True, False):
+                if not source.attribute().hasFn(om.MFn.kMessageAttribute):
+                    pending.append(source.node())
+        if current.hasFn(om.MFn.kDagNode):
+            dag = om.MFnDagNode(current)
+            for index in range(dag.parentCount()):
+                parent = dag.parent(index)
+                if not parent.isNull():
+                    pending.append(parent)
+
+
 def _connect_curve(node, curve, connect_identity=True):
     shape = _curve_shape(curve)
+    _check_source_dependency(node, shape)
     shape_path = _dag_path(shape)
     transform_path = om.MDagPath(shape_path)
     transform_path.pop()
@@ -263,6 +349,8 @@ def create(curves):
         for source in sources:
             existing = []
             for node in cmds.listConnections(source + ".message", source=False, destination=True, type=NODE_TYPE) or []:
+                if cmds.attributeQuery("braidToolsControlOwner", node=node, exists=True):
+                    continue
                 if source_transform(node) == source and asset_root(node):
                     existing.append(node)
             if existing:
@@ -291,6 +379,238 @@ def create(curves):
     from . import lifecycle
     lifecycle.refresh_registry()
     return _unique(result)
+
+
+def strand_controls(node):
+    """Return the three message-owned controls in strand order, or none."""
+    node = primary_generator(node)
+    if not cmds.attributeQuery("strandControls", node=node, exists=True):
+        return []
+    indices = cmds.getAttr(node + ".strandControls", multiIndices=True) or []
+    connected = {}
+    for index in indices:
+        values = cmds.listConnections("%s.strandControls[%d]" % (node, index),
+                                      source=True, destination=False) or []
+        if values:
+            if index not in (0, 1, 2) or len(values) != 1:
+                raise ValueError("分股控制曲线归属不明确: %s" % node)
+            control = _long(values[0])
+            if (cmds.nodeType(control) != "transform"
+                    or not cmds.attributeQuery("braidToolsGenerator", node=control, exists=True)
+                    or not cmds.isConnected(node + ".message", control + ".braidToolsGenerator")):
+                raise ValueError("分股控制曲线归属连接已损坏: %s" % control)
+            connected[index] = control
+    if not connected:
+        if geometry_generator(node) != node:
+            raise ValueError("分股控制曲线已缺失: %s" % node)
+        return []
+    if set(connected) != {0, 1, 2} or len(set(connected.values())) != 3:
+        raise ValueError("需要三条独立的分股控制曲线；请撤销误删除或恢复文件: %s" % node)
+    return [connected[index] for index in range(3)]
+
+
+def _control_connections(node, driver, controls):
+    """Canonical owned graph, used to reject unexplained extra dependencies."""
+    result = {
+        (node + ".message", driver + ".braidToolsControlOwner"),
+        (node + ".message", driver + ".sourceCurve"),
+        (driver + ".message", node + ".strandControlDriver"),
+    }
+    for attribute in _CONTROL_FORWARD:
+        result.add((node + "." + attribute, driver + "." + attribute))
+    for index, control in enumerate(controls):
+        shape = _curve_shape(control)
+        result.update({
+            (node + ".message", control + ".braidToolsGenerator"),
+            (control + ".message", "%s.strandControls[%d]" % (node, index)),
+            ("%s.outControlCurves[%d]" % (node, index), shape + ".create"),
+            ("%s.outControlCurves[%d]" % (node, index), "%s.strandRestCurves[%d]" % (driver, index)),
+            (shape + ".worldSpace[0]", "%s.strandControlCurves[%d]" % (driver, index)),
+        })
+    return result
+
+
+def _connection_key(plug):
+    """Canonical full DAG path and long attribute names from an API plug."""
+    return _delete_name(plug.node()) + "." + plug.partialName(
+        includeNodeName=False, includeNonMandatoryIndices=True,
+        includeInstancedIndices=True, useAlias=False, useFullAttributePath=True,
+        useLongNames=True)
+
+
+def _validated_control_graph(node):
+    """Validate the owned graph without changing it; used before resets/delete."""
+    node = primary_generator(node)
+    driver = geometry_generator(node)
+    controls = strand_controls(node)
+    if driver == node:
+        if controls:
+            raise ValueError("分股曲线存在但辅助节点缺失: %s" % node)
+        return None
+    if not controls or not cmds.getAttr(driver + ".strandControlsEnabled"):
+        raise ValueError("分股控制没有完整启用: %s" % node)
+    expected = _control_connections(node, driver, controls)
+    for source, destination in expected:
+        if not cmds.isConnected(source, destination):
+            raise ValueError("分股控制连接已改变，请先恢复连接: %s → %s" % (source, destination))
+    root = asset_root(node)
+    if not root:
+        raise ValueError("分股控制资产组缺失: %s" % node)
+    for control in controls:
+        if (cmds.listRelatives(control, parent=True, fullPath=True) or []) != [root]:
+            raise ValueError("分股控制曲线已移出原资产组，请恢复层级: %s" % control)
+    return driver, controls, expected
+
+
+def _enable_meshes(node, root):
+    meshes = {}
+    for plug, other in _delete_connections(node):
+        attribute = om.MFnAttribute(plug.attribute()).name
+        if attribute == "message":
+            continue
+        if attribute != "outMesh" or not plug.isElement or plug.logicalIndex() not in (0, 1, 2):
+            raise ValueError("创建分股控制前需先处理生成器的额外下游连接: %s" % plug.name())
+        mesh = _delete_name(other.node())
+        index = plug.logicalIndex()
+        if (cmds.nodeType(mesh) != "mesh" or om.MFnAttribute(other.attribute()).name != "inMesh"
+                or index in meshes or not mesh.startswith(root + "|")):
+            raise ValueError("需要三个直接连接的原始辫子网格，不能自动替换用户添加的历史: %s" % node)
+        _delete_check_editable(mesh)
+        parent = (cmds.listRelatives(mesh, parent=True, fullPath=True) or [None])[0]
+        if parent:
+            _delete_check_editable(parent)
+        meshes[index] = mesh
+    if set(meshes) != {0, 1, 2}:
+        raise ValueError("需要完整的三股实时网格才能创建分股控制: %s" % node)
+    return meshes
+
+
+def enable_strand_controls(nodes, samples=32):
+    """Create an acyclic baseline -> CV-tweak -> deformation graph, undoably.
+
+    Existing controls are reused without changing their resolution or edits.
+    ``samples`` fixes the number of editable CVs at first creation (4..256).
+    """
+    nodes = _generators(nodes)
+    if not nodes:
+        return []
+    if isinstance(samples, bool) or int(samples) != samples or not 4 <= int(samples) <= 256:
+        raise ValueError("分股控制点数量必须为 4 到 256 的整数。")
+    if not cmds.undoInfo(query=True, state=True):
+        raise ValueError("创建分股控制需要启用 Maya 撤销。")
+    pending = []
+    for node in nodes:
+        if not cmds.attributeQuery("outControlCurves", node=node, exists=True):
+            raise ValueError("当前加载的插件不支持分股控制，请保存工作并重启 Maya 后加载新版。")
+        graph = _validated_control_graph(node)
+        if graph:
+            continue
+        root = _delete_root(node)
+        if not root or not source_transform(node):
+            raise ValueError("请先修复资产组和源曲线: %s" % node)
+        _delete_check_editable(node)
+        _delete_check_editable(root)
+        sample_plug = node + ".strandControlSamples"
+        if (cmds.listConnections(sample_plug, source=True, destination=False)
+                or not cmds.getAttr(sample_plug, settable=True)):
+            raise ValueError("控制点数量受外部连接驱动或不可编辑，请先处理该连接: %s" % sample_plug)
+        meshes = _enable_meshes(node, root)
+        # Evaluate first, so invalid input cannot leave a half-created rig.
+        _plug(node, "outMesh").elementByLogicalIndex(0).asMObject()
+        if cmds.getAttr(node + ".outStatus") != "OK":
+            raise ValueError(cmds.getAttr(node + ".outStatus"))
+        pending.append((node, root, meshes))
+    changed = False
+    try:
+        with undo_chunk("BraidTools 创建分股控制曲线"):
+            for node, root, meshes in pending:
+                # Creating a node is a guaranteed undoable mutation. Mark only
+                # after it succeeds, so a failed first command cannot undo the
+                # user's preceding operation through an empty undo chunk.
+                driver = cmds.createNode(NODE_TYPE, name=_label(node) + "_StrandAdjust#")
+                changed = True
+                cmds.setAttr(node + ".strandControlSamples", int(samples))
+                if not cmds.attributeQuery("strandControlDriver", node=node, exists=True):
+                    cmds.addAttr(node, longName="strandControlDriver", attributeType="message")
+                if not cmds.attributeQuery("strandControls", node=node, exists=True):
+                    cmds.addAttr(node, longName="strandControls", attributeType="message", multi=True)
+                cmds.addAttr(driver, longName="braidToolsControlOwner", attributeType="message")
+                cmds.connectAttr(node + ".message", driver + ".braidToolsControlOwner")
+                cmds.connectAttr(driver + ".message", node + ".strandControlDriver")
+                cmds.connectAttr(node + ".message", driver + ".sourceCurve")
+                for attribute in _CONTROL_FORWARD:
+                    # Connecting compound ramps also forwards future entries.
+                    cmds.connectAttr(node + "." + attribute, driver + "." + attribute, force=True)
+                for index in range(3):
+                    control = cmds.createNode("transform", name="strand%d_control" % (index + 1), parent=root)
+                    control = _long(control)
+                    cmds.addAttr(control, longName="braidToolsGenerator", attributeType="message")
+                    cmds.connectAttr(node + ".message", control + ".braidToolsGenerator")
+                    cmds.connectAttr(control + ".message", "%s.strandControls[%d]" % (node, index))
+                    shape = cmds.createNode("nurbsCurve", name="strand%d_controlShape" % (index + 1), parent=control)
+                    shape = _long(shape)
+                    cmds.connectAttr("%s.outControlCurves[%d]" % (node, index), shape + ".create")
+                    cmds.connectAttr("%s.outControlCurves[%d]" % (node, index),
+                                     "%s.strandRestCurves[%d]" % (driver, index))
+                    cmds.connectAttr(shape + ".worldSpace[0]", "%s.strandControlCurves[%d]" % (driver, index))
+                    cmds.setAttr(shape + ".overrideEnabled", True)
+                    cmds.setAttr(shape + ".overrideColor", (13, 14, 6)[index])
+                cmds.setAttr(driver + ".strandControlsEnabled", True)
+                _plug(driver, "outMesh").elementByLogicalIndex(0).asMObject()
+                if cmds.getAttr(driver + ".outStatus") != "OK":
+                    raise ValueError(cmds.getAttr(driver + ".outStatus"))
+                for index, mesh in meshes.items():
+                    cmds.connectAttr("%s.outMesh[%d]" % (driver, index), mesh + ".inMesh", force=True)
+            controls = [control for node in nodes for control in strand_controls(node)]
+            if controls:
+                cmds.select(controls, replace=True)
+    except Exception:
+        if changed:
+            cmds.undo()  # Exactly this closed operation chunk; no older work.
+        raise
+    from . import lifecycle
+    lifecycle.refresh_registry()
+    return nodes
+
+
+def reset_strand_controls(nodes, strand=None):
+    """Clear owned CV tweaks and control-transform offsets, preserving the rig."""
+    nodes = _generators(nodes)
+    if strand is not None and (isinstance(strand, bool) or strand not in (0, 1, 2)):
+        raise ValueError("股编号必须为 0、1、2 或 None（全部）。")
+    targets = []
+    for node in nodes:
+        graph = _validated_control_graph(node)
+        if not graph:
+            raise ValueError("请先创建分股控制曲线: %s" % node)
+        unused_driver, controls, unused_expected = graph
+        for index in range(3) if strand is None else [int(strand)]:
+            control = controls[index]
+            shape = _curve_shape(control)
+            for target in (control, shape):
+                _delete_check_editable(target)
+            for attribute in ("translate", "rotate", "scale", "shear", "rotatePivot", "scalePivot",
+                              "rotatePivotTranslate", "scalePivotTranslate", "rotateAxis", "offsetParentMatrix",
+                              "inheritsTransform"):
+                if cmds.attributeQuery(attribute, node=control, exists=True):
+                    if cmds.listConnections(control + "." + attribute, source=True, destination=False):
+                        raise ValueError("控制曲线变换受外部连接驱动，不能重置: %s.%s" % (control, attribute))
+            if cmds.listConnections(shape + ".controlPoints", source=True, destination=False):
+                raise ValueError("控制点受外部连接驱动，不能重置: %s" % shape)
+            targets.append((control, shape))
+    with undo_chunk("BraidTools 重置分股控制"):
+        for control, shape in targets:
+            # A connected curve's controlPoints are additive tweaks, not CVs.
+            for index in cmds.getAttr(shape + ".controlPoints", multiIndices=True) or []:
+                cmds.setAttr("%s.controlPoints[%d]" % (shape, index), 0.0, 0.0, 0.0, type="double3")
+            for attribute in ("translate", "rotate", "shear", "rotatePivot", "scalePivot",
+                              "rotatePivotTranslate", "scalePivotTranslate", "rotateAxis"):
+                cmds.setAttr(control + "." + attribute, 0.0, 0.0, 0.0, type="double3")
+            cmds.setAttr(control + ".scale", 1.0, 1.0, 1.0, type="double3")
+            cmds.setAttr(control + ".inheritsTransform", True)
+            if cmds.attributeQuery("offsetParentMatrix", node=control, exists=True):
+                cmds.setAttr(control + ".offsetParentMatrix", *tuple(om.MMatrix()), type="matrix")
+    return nodes
 
 
 def _delete_name(obj):
@@ -329,10 +649,14 @@ def _delete_connections(node, outgoing=True):
 
 def _delete_root(node):
     """Use either surviving message link, never a name or guessed ancestor."""
+    graph = _validated_control_graph(node)
+    control_connections = graph[2] if graph else set()
     linked = [_delete_name(plug.node()) for plug in _plug(node, "assetRoot").connectedTo(True, False)]
     back_links = []
     for plug, other in _delete_connections(node):
         if om.MFnAttribute(plug.attribute()).name != "message":
+            continue
+        if (_connection_key(plug), _connection_key(other)) in control_connections:
             continue
         if om.MFnAttribute(other.attribute()).name != "braidToolsGenerator":
             raise ValueError("删除已取消：生成器有额外对象连接，归属不明确：%s" % node)
@@ -362,10 +686,10 @@ def _delete_root(node):
     return root
 
 
-def _delete_cleanup_transform(transform, allowed_nodes, is_root=False):
+def _delete_cleanup_transform(transform, allowed_nodes, is_root=False, is_control=False):
     """Only empty-after-delete transforms without attached user data qualify."""
     attributes = cmds.listAttr(transform, userDefined=True) or []
-    permitted = {"braidToolsGenerator"} if is_root else set()
+    permitted = {"braidToolsGenerator"} if is_root or is_control else set()
     if set(attributes) - permitted:
         return False
     for outgoing in (True, False):
@@ -392,30 +716,65 @@ def delete_assets(nodes):
         raise ValueError("删除已取消：Maya 撤销当前未启用。请先启用撤销，再删除资产。")
     generators = set(nodes)
     meshes = set()
+    control_shapes = set()
+    control_transforms = set()
     cleanup = set()
     roots = set()
     protected_sources = {_delete_name(plug.node()) for node in nodes
                          for plug in _plug(node, "sourceCurve").connectedTo(True, False)}
     for node in nodes:
         _delete_check_editable(node)
+        graph = _validated_control_graph(node)
+        internal = set()
+        stages = [node]
+        if graph:
+            driver, controls, internal = graph
+            generators.add(driver)
+            stages.append(driver)
+            _delete_check_editable(driver)
+            for outgoing in (True, False):
+                for plug, other in _delete_connections(driver, outgoing=outgoing):
+                    pair = ((_connection_key(plug), _connection_key(other)) if outgoing
+                            else (_connection_key(other), _connection_key(plug)))
+                    if pair in internal:
+                        continue
+                    if outgoing and om.MFnAttribute(plug.attribute()).name == "outMesh":
+                        continue  # Full mesh ownership checks below.
+                    raise ValueError("删除已取消：分股辅助节点有额外连接：%s" % other.name())
+            for control in controls:
+                _delete_check_editable(control)
+                shape = _curve_shape(control)
+                _delete_check_editable(shape)
+                for outgoing in (True, False):
+                    for plug, other in _delete_connections(shape, outgoing=outgoing):
+                        pair = ((_connection_key(plug), _connection_key(other)) if outgoing
+                                else (_connection_key(other), _connection_key(plug)))
+                        if pair not in internal:
+                            raise ValueError("删除已取消：分股控制曲线有额外历史或外部连接：%s" % other.name())
+                control_shapes.add(shape)
+                control_transforms.add(control)
+                cleanup.add(control)
         root = _delete_root(node)
         if root:
             _delete_check_editable(root)
             roots.add(root)
         by_output = {}
-        for plug, other in _delete_connections(node):
-            attribute = om.MFnAttribute(plug.attribute()).name
-            if attribute == "message":
-                continue  # Already checked by _delete_root.
-            if attribute != "outMesh" or not plug.isElement or plug.logicalIndex() not in (0, 1, 2):
-                raise ValueError("删除已取消：生成器有额外下游连接，请先断开或烘焙：%s" % plug.name())
-            other_node = _delete_name(other.node())
-            if cmds.nodeType(other_node) != "mesh" or om.MFnAttribute(other.attribute()).name != "inMesh":
-                raise ValueError("删除已取消：网格输出含额外历史或不明确对象：%s" % other.name())
-            index = plug.logicalIndex()
-            if index in by_output and by_output[index] != other_node:
-                raise ValueError("删除已取消：同一股输出被多个网格共用：%s" % plug.name())
-            by_output[index] = other_node
+        for stage in stages:
+            for plug, other in _delete_connections(stage):
+                attribute = om.MFnAttribute(plug.attribute()).name
+                if (_connection_key(plug), _connection_key(other)) in internal:
+                    continue
+                if attribute == "message":
+                    continue  # Already checked by _delete_root.
+                if attribute != "outMesh" or not plug.isElement or plug.logicalIndex() not in (0, 1, 2):
+                    raise ValueError("删除已取消：生成器有额外下游连接，请先断开或烘焙：%s" % plug.name())
+                other_node = _delete_name(other.node())
+                if cmds.nodeType(other_node) != "mesh" or om.MFnAttribute(other.attribute()).name != "inMesh":
+                    raise ValueError("删除已取消：网格输出含额外历史或不明确对象：%s" % other.name())
+                index = plug.logicalIndex()
+                if index in by_output and by_output[index] != other_node:
+                    raise ValueError("删除已取消：同一股输出被多个网格共用：%s" % plug.name())
+                by_output[index] = other_node
         for mesh in by_output.values():
             _delete_check_editable(mesh)
             if root and not mesh.startswith(root + "|"):
@@ -430,13 +789,13 @@ def delete_assets(nodes):
                 if root and (cmds.listRelatives(parent, parent=True, fullPath=True) or []) == [root]:
                     cleanup.add(parent)
             meshes.add(mesh)
-    planned = generators | meshes
+    planned = generators | meshes | control_shapes
     # Clean only immediate strand transforms proved by an output connection.
     # Arbitrary inserted groups and unidentifiable empty children stay intact.
     for transform in sorted(cleanup, key=lambda value: value.count("|"), reverse=True):
         children = set(cmds.listRelatives(transform, children=True, fullPath=True) or [])
         if (transform not in protected_sources and children <= planned
-                and _delete_cleanup_transform(transform, planned)):
+                and _delete_cleanup_transform(transform, planned, is_control=transform in control_transforms)):
             planned.add(transform)
     for root in roots:
         children = set(cmds.listRelatives(root, children=True, fullPath=True) or [])
@@ -645,6 +1004,7 @@ def _plug(node, attribute):
 
 
 def _guide_data(node, index, matrix):
+    node = geometry_generator(node)
     data = _plug(node, "outGuideCurves").elementByLogicalIndex(index).asMObject()
     status = cmds.getAttr(node + ".outStatus")
     if status != "OK":
@@ -773,12 +1133,13 @@ def bake(nodes):
             root = asset_root(node)
             if not root:
                 raise ValueError("资产组缺失: %s" % node)
-            if cmds.getAttr(node + ".outStatus") != "OK":
-                raise ValueError(cmds.getAttr(node + ".outStatus"))
+            geometry = geometry_generator(node)
+            if cmds.getAttr(geometry + ".outStatus") != "OK":
+                raise ValueError(cmds.getAttr(geometry + ".outStatus"))
             output = cmds.createNode("transform", name=_label(root) + "_Baked#")
             output = _long(output)
             for index in range(3):
-                destinations = cmds.listConnections("%s.outMesh[%d]" % (node, index),
+                destinations = cmds.listConnections("%s.outMesh[%d]" % (geometry, index),
                                                     source=False, destination=True, shapes=True, type="mesh") or []
                 if not destinations:
                     raise ValueError("输出网格缺失: %s strand %d" % (node, index + 1))

@@ -8,7 +8,7 @@ Download the ZIP above → extract the complete folder → drag `BraidTools_Inst
 
 BraidTools generates editable three-strand braids along open NURBS curves in Windows Maya. It provides a Chinese dockable panel, standalone guide curves for subsequent XGen setup, and baked meshes.
 
-**Status: 1.0.3 learning preview.** The complete package includes locally compiled Windows Maya 2022–2026 plugins; the filename remains `BraidTools1.0.zip`. They use the unregistered development node ID `0x0007B7A1`, which may conflict with another plugin using the same ID. A future registered-ID version will require existing-scene migration. The project is MIT-licensed, with source and build instructions available.
+**Status: 1.1.0 learning preview.** Three independent strand-control curves retain the live master path and parameters. Windows Maya 2022–2026 binaries are included; the filename stays `BraidTools1.0.zip`. The MIT-licensed project uses the unregistered development node ID `0x0007B7A1`.
 
 ## Compatibility and verification
 
@@ -22,13 +22,15 @@ Windows x64 only. Every Maya major version requires its own `plug-ins/<year>/bra
 | 2025 | Python 3.11.4 / Qt 6.5.3 | Passed | 18/18 passed |
 | 2026 | Python 3.11.9 / Qt 6.5.3 | Passed | 18/18 passed |
 
-The 2022, 2025 and 2026 results are historical isolated-test records. Their original `.mll` files are retained, and these Maya tests were not rerun for this update. Each suite ran in a separate `mayapy` process with a dedicated profile. Those three versions also passed module discovery, version-specific loading, complete panel construction, parameter edits and undo, offscreen ramp drawing and mouse edits, and dialog invocation. Actual GUI dragging, viewport interaction and extended sessions have not yet been retested across these versions for this multi-version package. Offscreen checks are not viewport acceptance tests.
+All five binaries were rebuilt for this version. Maya 2022, 2025 and 2026 each passed fresh isolated tests: 18 base integration, 18 strand-control, 12 deletion API, 8 deletion UI and 7 strand UI cases, plus module discovery/loading and offscreen Qt smoke checks. Maya 2023/2024 remain compile/static-only previews. Offscreen checks do not establish viewport interaction, editing feel or long-session acceptance.
 
-All three versions also passed module discovery, actual `.mll` loading, generation of 27 guide curves, and saving/reopening a scene through paths containing **Chinese characters and spaces**. English-only paths are not required. Other arbitrary Unicode combinations have not all been tested.
+Earlier validation also covered module discovery, plugin loading, 27 guide curves and scene save/reopen through Chinese and space-containing paths on those three versions. English-only paths are not required; arbitrary Unicode combinations have not all been tested.
 
 The panel uses Maya's bundled PySide2 or PySide6; do not install a separate Qt binding for this tool. Maya 2022 Python 2 mode is unsupported. Maya 2023 and 2024 are not installed on the build machine. Their new binaries have only been compiled; loading, Python/Qt, functionality and GUI behavior remain untested. The five versions have not all passed runtime validation.
 
 ## Features and limits
+
+- Three independent editable strand curves, per-strand/all reset, persistent CV offsets over the live master path, and matching newly extracted guides/baked meshes.
 
 - Live generation from one or multiple open curves; geometry keeps updating with the panel closed.
 - Fixed pitch or fixed cycle count, size, flatness, strand shape, orientation and phase.
@@ -42,7 +44,7 @@ Closed paths, other strand counts, collision solving, automatic XGen Description
 
 <img src="docs/images/panel.png" alt="BraidTools Chinese parameter panel" width="420">
 
-This image shows the 1.0.0 layout; 1.0.1 adds a delete-selected-braids button below the asset list. It does not represent completed GUI verification on every Maya version.
+This is an offscreen Qt preview of the 1.1.0 panel and strand-control section, not an interactive Maya viewport acceptance capture.
 
 ## Drag-and-drop installation
 
@@ -101,9 +103,9 @@ cmake --build build/2026 --config Release
 
 Change the version, SDK path and build directory together for another year. CMake checks that the selected SDK matches `MAYA_VERSION`. Do not reuse a build cache across versions or replace a binary loaded in Maya.
 
-The original 2022, 2025 and 2026 binaries were built with Visual Studio 2022 / MSVC 19.44 and are retained unchanged. Maya 2022's documented baseline is Visual Studio 2019.7; historical local tests do not imply Autodesk certification for this toolchain combination. [Autodesk Maya 2022 devkit notes](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/What-s-New-What-s-Changed-/2022-Whats-New-in-API.html)
+All five binaries were rebuilt with Visual Studio 2022 / MSVC 19.44. Maya 2022 documents a Visual Studio 2019.7 baseline; local tests are not Autodesk certification. [Autodesk Maya 2022 devkit notes](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/What-s-New-What-s-Changed-/2022-Whats-New-in-API.html)
 
-The new 2023 and 2024 binaries use the same unchanged C++ source, linked separately against each official base-release DevKit. Both completed Release x64 builds with Visual Studio 2022 / MSVC 19.44.35229.0 and Windows SDK 10.0.26100.0. Autodesk specifies [Visual Studio 2019 for Maya 2023](https://help.autodesk.com/cloudhelp/2023/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html) and [Visual Studio 2022 for Maya 2024](https://help.autodesk.com/cloudhelp/2024/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html). The 2023 build therefore differs from the specified environment. Both remain candidates awaiting host validation; successful compilation is not an Autodesk compatibility guarantee.
+The 2023/2024 builds link their corresponding official base-release DevKits, using Release x64, MSVC 19.44.35229.0 and Windows SDK 10.0.26100.0. Autodesk specifies [VS2019 for Maya 2023](https://help.autodesk.com/cloudhelp/2023/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html) and [VS2022 for Maya 2024](https://help.autodesk.com/cloudhelp/2024/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html). The 2023 toolchain differs from that baseline; both still require host validation.
 
 `tests/integration_maya.py` must run in a new target-version `mayapy` process. Provide `--plugin`, `--scripts`, `--output` and `--profile`; the profile must be a dedicated child of the output directory. Set `BRAIDTOOLS_ISOLATED_TEST=1` and `MAYA_APP_DIR` to that profile. `tests/module_qt_smoke.py` adds module-discovery and offscreen UI checks. Do not execute these tests in an existing interactive Maya session. Sanitize local paths in raw reports before publishing them.
 

@@ -121,7 +121,7 @@ class InstallerAcceptanceTests(unittest.TestCase):
             records[relative] = {'sha256': hashlib.sha256(data).hexdigest(), 'size': len(data)}
         write_manifest(destination, {
             'schema': 1, 'identity': 'BraidTools.runtime.v1', 'package': 'BraidTools',
-            'version': '1.0.3', 'platform': 'win64', 'maya_versions': [2022, 2023, 2024, 2025, 2026],
+            'version': '1.1.0', 'platform': 'win64', 'maya_versions': [2022, 2023, 2024, 2025, 2026],
             'files': records,
         })
         # Extracted packages can contain user notes and development files;

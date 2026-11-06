@@ -8,7 +8,7 @@
 
 BraidTools 是面向 Windows Maya 的三股麻花辫建模插件。它沿开放 NURBS 曲线生成可编辑的编织模型，提供中文可停靠面板，并能提取独立的 XGen 源导向曲线和烘焙网格。
 
-**当前状态：1.0.3 学习预览版。** 完整安装包提供 Windows Maya 2022–2026 的自编插件，文件名保持 `BraidTools1.0.zip`。节点仍使用未注册开发 ID `0x0007B7A1`，可能与使用同一 ID 的其他插件冲突；未来更换注册 ID 时需要处理已有场景迁移。项目采用 MIT 许可证，源码和构建方式同时公开。
+**当前状态：1.1.0 学习预览版。** 新增三股独立控制曲线，保留主路径与造型参数。完整安装包提供 Windows Maya 2022–2026 的自编插件，文件名保持 `BraidTools1.0.zip`。节点仍使用未注册开发 ID `0x0007B7A1`；项目采用 MIT 许可证，源码和构建方式公开。
 
 ## 兼容性与验证范围
 
@@ -22,13 +22,15 @@ BraidTools 是面向 Windows Maya 的三股麻花辫建模插件。它沿开放 
 | 2025 | Python 3.11.4 / Qt 6.5.3 | 通过 | 18/18 通过 |
 | 2026 | Python 3.11.9 / Qt 6.5.3 | 通过 | 18/18 通过 |
 
-表中 2022、2025、2026 的功能结果来自既有隔离验收，本次保留三版原有 `.mll`，未重新运行这些 Maya 测试。历史验收在各版本独立的 `mayapy` 进程与测试设置目录中运行，还通过了模块自动发现、按版本加载、完整面板构建、参数修改与撤销、离屏 Ramp 绘制及鼠标编辑、对话框调用的补充检查。当前多版本包尚未完成各版本真实 GUI 拖动、视口及长时间运行复验；离屏检查不等于真实视口验收。
+本版已重新构建全部五个年份，并在 Maya 2022、2025、2026 的独立 `mayapy` 与隔离设置目录中重新运行全部检查：每版 18 项基础功能、18 项分股控制、12 项删除 API、8 项删除界面、7 项分股界面均通过；模块自动发现、加载和离屏 Qt 检查也通过。2023／2024 仅编译与静态验证。离屏检查不等于真实视口拖动、手感或长时间运行验收。
 
-三版均在含**中文和空格**的隔离用户目录中通过模块自动发现、实际 `.mll` 加载、27 条导向生成，以及中文场景路径保存重开。**不要求全英文路径**；其他任意 Unicode 字符组合未逐一验证。
+此前三版还在含中文和空格的隔离用户目录中通过模块自动发现、插件加载、27 条导向生成及中文场景路径保存重开。不要求全英文路径；其他任意 Unicode 字符组合未逐一验证。
 
 界面使用 Maya 自带的 PySide2 或 PySide6，无需另外安装 Qt。Maya 2022 的 Python 2 模式不受支持。本机未安装 Maya 2023、2024 主程序，两版新增产物只完成编译，加载、Python/Qt、功能与 GUI 均待验证，不能视为五版全部通过。
 
 ## 功能
+
+- 三股各有可编辑控制曲线，支持单股／全部重置；主路径和参数继续有效，新的导向与烘焙匹配调整结果。
 
 - 一条或多条开放路径生成三股模型，编辑路径 CV 时由依赖图更新；关闭面板后关联仍保留。
 - 固定节距／固定周期、整体尺寸、辫子与单股扁平度、朝向和相位。
@@ -42,7 +44,7 @@ BraidTools 是面向 Windows Maya 的三股麻花辫建模插件。它沿开放 
 
 <img src="docs/images/panel.png" alt="BraidTools 中文参数面板" width="420">
 
-截图展示 1.0.0 的面板布局；1.0.1 在列表下方新增“删除所选辫子…”。截图不代表所有 Maya 版本的界面均已通过复验。
+截图为 1.1.0 的离屏 Qt 面板预览，展示新增的三股控制区域；不代表真实 Maya 视口或所有版本的交互验收。
 
 ## 拖入安装，长期使用
 
@@ -101,9 +103,9 @@ cmake --build build/2026 --config Release
 
 构建其他年份时，同时更换 `MAYA_VERSION`、`MAYA_LOCATION` 和构建目录；CMake 会检查年份与 SDK 是否一致。不要复用不同年份的构建缓存，也不要覆盖正在被 Maya 加载的 `.mll`。
 
-原 2022、2025、2026 三版使用 Visual Studio 2022 / MSVC 19.44 构建，本次保留其原有二进制。Maya 2022 的官方工具链基线为 Visual Studio 2019.7；已有本机测试不代表 Autodesk 对该工具链组合的认证。[Autodesk Maya 2022 devkit 更新](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/What-s-New-What-s-Changed-/2022-Whats-New-in-API.html)
+本版五个年份均使用 Visual Studio 2022 / MSVC 19.44 重新构建。Maya 2022 官方工具链基线为 Visual Studio 2019.7；本机隔离测试不代表 Autodesk 对该组合的认证。[Autodesk Maya 2022 devkit 更新](https://help.autodesk.com/cloudhelp/2022/ENU/Maya-SDK/What-s-New-What-s-Changed-/2022-Whats-New-in-API.html)
 
-新增 2023、2024 由同一份未修改的 C++ 源码分别链接对应基础版的官方 DevKit，使用 Visual Studio 2022 / MSVC 19.44.35229.0、Windows SDK 10.0.26100.0，完成 Release x64 编译。Autodesk 对 [Maya 2023 指定 Visual Studio 2019](https://help.autodesk.com/cloudhelp/2023/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html)，对 [Maya 2024 指定 Visual Studio 2022](https://help.autodesk.com/cloudhelp/2024/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html)。因此 2023 构建偏离官方指定环境；两版均只是待主机验证的候选产物，编译通过不构成 Autodesk 兼容性保证。
+2023、2024 分别链接对应年份的官方基础版 DevKit，以 Release x64、MSVC 19.44.35229.0、Windows SDK 10.0.26100.0 构建。Autodesk 对 [Maya 2023 指定 Visual Studio 2019](https://help.autodesk.com/cloudhelp/2023/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html)，对 [Maya 2024 指定 Visual Studio 2022](https://help.autodesk.com/cloudhelp/2024/ENU/Maya-SDK/files/Maya_SDK_MinimumRequirementsAllPlatforms_html.html)。2023 构建偏离官方指定环境；两版均待实际宿主验证。
 
 `tests/integration_maya.py` 提供隔离验收。使用目标版本的 `mayapy`，为每次运行设置独立的 `--output` 和位于其中的 `--profile`，同时设置 `BRAIDTOOLS_ISOLATED_TEST=1` 和匹配的 `MAYA_APP_DIR`。`tests/module_qt_smoke.py` 补充验证模块发现和离屏界面行为。不要在已有交互 Maya 会话中执行这些测试。原始报告可能包含本机路径，公开前需要清理。
 
